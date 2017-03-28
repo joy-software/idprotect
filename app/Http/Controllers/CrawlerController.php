@@ -32,7 +32,7 @@ class CrawlerController extends Controller
     {
 
         $client = new GuzzleClient();
-        $strSearch = "ENSP Yaoundé";
+        $strSearch = "ENSP Yaounde";
         $url = $this->queryToUrl($strSearch, 0, $nb, "FR");
         //echo $strSearch;
         // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
