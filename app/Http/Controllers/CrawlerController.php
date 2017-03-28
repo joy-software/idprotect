@@ -20,8 +20,9 @@ class CrawlerController extends Controller
         $client = new GuzzleClient();
         if(empty($requete)) $requete = "\"bayoi+michel\"";
         $strSearch = $requete;
+        $url = $this->queryToUrl($strSearch, 0, 20, "FR");
         //echo $strSearch;
-        $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
+       // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
         $crawler = $client->request('GET', $url);
         return $crawler->getBody();
@@ -49,8 +50,9 @@ class CrawlerController extends Controller
         $command1 = "insubject%3A+";
         if(empty($requete)) $requete = "\"bayoi+michel\"";
         $strSearch = $requete;
+        $url = $this->queryToUrl($strSearch, 0, 20, "FR");
         //echo $strSearch;
-        $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
+        //$url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
         $crawler = $client->request('GET', $url);
 
@@ -78,4 +80,18 @@ class CrawlerController extends Controller
         print_r($nodeValues);//*/
 
     }
+
+    function queryToUrl($query, $start=null, $perPage=100, $country="US") {
+        return "http://www.google.com/search?" . http_build_query(array(
+            // Query
+            "q"     => urlencode($query),
+            // Country (geolocation presumably)
+            "gl"    => $country,
+            // Start offset
+            "start" => $start,
+            // Number of result to a page
+            "num"   => $perPage
+        ), true);
+    }
+
 }
