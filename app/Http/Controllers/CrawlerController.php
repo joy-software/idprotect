@@ -18,11 +18,24 @@ class CrawlerController extends Controller
     {
 
         $client = new GuzzleClient();
-        if(empty($requete)) $requete = "\"bayoi+michel\"";
+        if(empty($requete)) $requete = "ENSP Yaounde";
         $strSearch = $requete;
-        $url = $this->queryToUrl($strSearch, 0, 30, "FR");
+        $url = $this->queryToUrl($strSearch, 0, 20, "FR");
         //echo $strSearch;
        // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
+        // Go to the symfony.com website
+        $crawler = $client->request('GET', $url);
+        return $crawler->getBody();
+    }
+
+    public function nbchange($nb)
+    {
+
+        $client = new GuzzleClient();
+        $strSearch = "ENSP Yaoundé";
+        $url = $this->queryToUrl($strSearch, 0, $nb, "FR");
+        //echo $strSearch;
+        // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
         $crawler = $client->request('GET', $url);
         return $crawler->getBody();
@@ -35,7 +48,7 @@ class CrawlerController extends Controller
     {
 
         $client = new GuzzleClient();
-        $strSearch = "\"bayoi+michel\"";
+        $strSearch = "ENSP Yaounde";
         //echo $strSearch;
         $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
@@ -48,9 +61,9 @@ class CrawlerController extends Controller
         $client = new Client();
         $command = "allintitle%3A+";
         $command1 = "insubject%3A+";
-        if(empty($requete)) $requete = "\"bayoi+michel\"";
+        if(empty($requete)) $requete = "ENSP Yaounde";
         $strSearch = $requete;
-        $url = $this->queryToUrl($strSearch, 0, 30, "FR");
+        $url = $this->queryToUrl($strSearch, 0, 20, "FR");
         //echo $strSearch;
         //$url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
@@ -68,12 +81,14 @@ class CrawlerController extends Controller
 
     }
 
+
+
     public function searchs()
     {
         $client = new Client();
         $command = "allintitle%3A+";
         $command1 = "insubject%3A+";
-        $strSearch = "\"bayoi+michel\"";
+        $strSearch = "ENSP Yaounde";
         //echo $strSearch;
         $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website

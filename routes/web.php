@@ -21,5 +21,6 @@ Route::get('/home', 'HomeController@index');
 
 Route::get('/search/{requete}', 'CrawlerController@search');
 Route::get('/view/{requete}', 'CrawlerController@view');
+Route::get('/{nb}', 'CrawlerController@nbchange');
 Route::get('/search', 'CrawlerController@searchs');
 Route::get('/view', 'CrawlerController@views');
