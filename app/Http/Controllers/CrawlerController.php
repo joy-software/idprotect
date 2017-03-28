@@ -20,7 +20,7 @@ class CrawlerController extends Controller
         $client = new GuzzleClient();
         if(empty($requete)) $requete = "\"bayoi+michel\"";
         $strSearch = $requete;
-        $url = $this->queryToUrl($strSearch, 0, 20, "FR");
+        $url = $this->queryToUrl($strSearch, 0, 30, "FR");
         //echo $strSearch;
        // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
@@ -50,7 +50,7 @@ class CrawlerController extends Controller
         $command1 = "insubject%3A+";
         if(empty($requete)) $requete = "\"bayoi+michel\"";
         $strSearch = $requete;
-        $url = $this->queryToUrl($strSearch, 0, 20, "FR");
+        $url = $this->queryToUrl($strSearch, 0, 30, "FR");
         //echo $strSearch;
         //$url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
@@ -59,7 +59,12 @@ class CrawlerController extends Controller
          $nodeValues = $crawler->filter('ol > div')->each(function (Crawler $node, $i) {
              return $node->text();
          });
-         print_r($nodeValues);//*/
+        $array = array_flatten($nodeValues);
+        foreach ($array as $data)
+        {
+            print ($data."<br> <br> ");
+        }
+         //print_r($nodeValues);//*/
 
     }
 
