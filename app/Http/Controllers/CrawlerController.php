@@ -59,6 +59,19 @@ class CrawlerController extends Controller
         return $crawler->getBody();
     }
 
+    public function viewUrl($requete)
+    {
+
+        $client = new GuzzleClient();
+
+        $url = $requete;
+        //echo $strSearch;
+        // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
+        // Go to the symfony.com website
+        $crawler = $client->request('GET', $url);
+        return $crawler->getBody();
+    }
+
     public function nbchange($nb)
     {
 
