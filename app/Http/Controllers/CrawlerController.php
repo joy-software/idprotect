@@ -208,7 +208,7 @@ class CrawlerController extends Controller
     }
 
     function queryToUrlDuckgo($query) {
-        return "https://duckduckgo.com/?q=joy+ndja&ia=web";
+        return "http://duckduckgo.com/?q=joy+ndja";
     }
 
 }
