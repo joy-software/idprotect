@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet"  href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.1/css/bulma.min.css"/>
+    <style type="text/css"> body{margin-top: 50px}</style>
+    <title>Vue Example</title>
+</head>
+<body>
+<div id="root" class="container">
+    <!--input type="text" id="input" v-model="message">
+    <p>The value of the input is : {{message}}</p>
+    <ul>
+        <li v-for="name in names" v-text="name"> </li>
+    </ul>
+    <input type="text" v-model="newName">
+    <button @click="addName">Add Name</button>
+    <button-- :title="title">Hover on me</button>
+    <h2>All Tasks</h2>
+    <ul>
+        <li v-for="task in tasks"  v-text="task.description"> </li>
+    </ul>
+
+    <h2> Incomplete Tasks</h2>
+    <ul>
+        <li v-for="task in IncompleteTasks" v-text="task.description"> </li>
+    </ul>
+    <message title="Hello World" body="Lorem ipsum dolor sit amet"></message>
+    <message-- title="Hello LACY" body="Lorem ipsum dolor sit amet"></message>
+    <modal v-if="showModal" @close="showModal = false" body="Lorem ipsum dolor sit amet, Lorem ipsum dolor sit amet  Lorem ipsum dolor sit amet
+            Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet"></modal>
+    <button @click="showModal= true">Show Modal</button>
+
+    <tabs>
+        <tab name="About me" :selected="true">
+            <h1>Here is the content of the About me Tab</h1>
+        </tab>
+        <tab name="About Us">
+            <h1>Here is the content of the About Us Tab</h1>
+        </tab>
+        <tab name="About our couple">
+            <h1>Here is the content of the About couple Tab</h1>
+        </tab>
+        <tab name="About our mariage">
+            <h1>Here is the content of the About our mariage Tab</h1>
+        </tab>
+    </tabs>
+    <coupon @applied="couponApplied"></coupon-->
+    <modal>
+        <template slot="title">My title</template>
+       Lorem ipsum dolor sit amet, Lorem ipsum dolor sit amet  Lorem ipsum dolor sit amet
+            Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet
+        <template slot="footer">
+            <a class="button is-success">Save changes</a>
+            <a class="button">Cancel</a>
+        </template>
+
+    </modal>
+</div>
+
+<script src="https://unpkg.com/vue"></script>
+
+<script src="js/main.js"> </script>
+</body>
+</html>

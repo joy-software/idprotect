@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Search_Result;
 use Goutte\Client;
 use GuzzleHttp\Client as GuzzleClient;
 
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 use Symfony\Component\DomCrawler\Crawler;
 
 class CrawlerController extends Controller
@@ -24,7 +26,10 @@ class CrawlerController extends Controller
         //echo $strSearch;
        // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
-        $crawler = $client->request('GET', $url);
+        $crawler = $client->request('GET', $url,[
+            'headers' => [
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ',
+            ]]);
         return $crawler->getBody();
     }
 
@@ -37,7 +42,7 @@ class CrawlerController extends Controller
         $client = new GuzzleClient();
         if(empty($requete)) $requete = "ENSP Yaounde";
         $strSearch = $requete;
-        $url = $this->queryToUrlBing($strSearch, 0, 20, "FR");
+        $url = $this->queryToUrlBing($strSearch, 0, 30, "");
         //echo $strSearch;
         // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
@@ -45,32 +50,8 @@ class CrawlerController extends Controller
         return $crawler->getBody();
     }
 
-    public function viewDuck($requete)
-    {
 
-        $client = new GuzzleClient();
-        if(empty($requete)) $requete = "ENSP Yaounde";
-        $strSearch = $requete;
-        $url = $this->queryToUrlDuckgo($strSearch, 0, 20, "FR");
-        //echo $strSearch;
-        // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
-        // Go to the symfony.com website
-        $crawler = $client->request('GET', $url);
-        return $crawler->getBody();
-    }
 
-    public function viewUrl($requete)
-    {
-
-        $client = new GuzzleClient();
-
-        $url = $requete;
-        //echo $strSearch;
-        // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
-        // Go to the symfony.com website
-        $crawler = $client->request('GET', $url);
-        return $crawler->getBody();
-    }
 
     public function nbchange($nb)
     {
@@ -103,36 +84,86 @@ class CrawlerController extends Controller
     public function search($requete)
     {
         $client = new Client();
+       // $client->setClient(new GuzzleClient());
+        $client->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
         $command = "allintitle%3A+";
         $command1 = "insubject%3A+";
         if(empty($requete)) $requete = "ENSP Yaounde";
         $strSearch = $requete;
-        $url = $this->queryToUrl($strSearch, 0, 20, "FR");
+        $nb = 20;
+        $url = $this->queryToUrl($strSearch, 0, $nb, "CM");
         //echo $strSearch;
         //$url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
         $crawler = $client->request('GET', $url);
 
-         $nodeValues = $crawler->filter('ol > div')->each(function (Crawler $node, $i) {
-             return $node->text();
+        //on récupère les entêtes des résultats
+         $resultHeaders = $crawler->filter('td div#center_col h3 a')->each(function (Crawler $node, $i) {
+             return $node->html();
          });
-        $array = array_flatten($nodeValues);
-        foreach ($array as $data)
+        $resultHeader = array_flatten($resultHeaders);
+
+
+        $resultLinks = $crawler->filter('td div#center_col div cite')->each(function (Crawler $node, $i) {
+            return $node->html();
+        });
+        $resultLink = array_flatten($resultLinks);
+
+        $resultBodys = $crawler->filter('td div#center_col div span.st')->each(function (Crawler $node, $i) {
+            return $node->html();
+        });
+        $resultBody = array_flatten($resultBodys);
+
+
+        $count = 0;
+        $except = $nb + 1 ;
+        $searchResults = [];
+        foreach ($resultHeader as $data)
         {
-            print ($data."<br> <br> ");
+            if(strpos($data,'mages for') == false)
+            {
+                //print ($count."  ".$data."<br> <br> ");
+                //print ($count."  ".$except."<br> <br> ");
+                if($count < $except)
+                {
+                    $searchResult = new Search_Result([
+                       'title' => $resultHeader[$count],
+                        'link' => $resultLink[$count],
+                        'preview' => $resultBody[$count]
+                    ]);
+
+                    array_push($searchResults,$searchResult);
+                }
+                else{
+                    $searchResult = new Search_Result([
+                        'title' => $resultHeader[$count],
+                        'link' => $resultLink[$count - 1],
+                        'preview' => $resultBody[$count - 1]
+                    ]);
+                    array_push($searchResults,$searchResult);
+                }
+            }
+            else
+            {
+                $except = $count;
+            }
+            $count++;
         }
+        //print count($searchResults);
+
          //print_r($nodeValues);//*/
+        return response()->json($searchResults);
 
     }
 
     public function searchBing($requete)
     {
         $client = new Client();
-        $command = "allintitle%3A+";
+        /*$command = "allintitle%3A+";
         $command1 = "insubject%3A+";
         if(empty($requete)) $requete = "ENSP Yaounde";
         $strSearch = $requete;
-        $url = $this->queryToUrlBing($strSearch, 0, 20, "FR");
+        $url = $this->queryToUrlBing($strSearch, 0, 20, "fr-FR");
         //echo $strSearch;
         //$url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
@@ -147,33 +178,79 @@ class CrawlerController extends Controller
             print ($data."<br> <br> ");
         }
         //print_r($nodeValues);//*/
-
-    }
-
-    public function searchDuck($requete)
-    {
-        $client = new Client();
+        $client->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
         $command = "allintitle%3A+";
         $command1 = "insubject%3A+";
         if(empty($requete)) $requete = "ENSP Yaounde";
         $strSearch = $requete;
-        $url = $this->queryToUrlDuckgo($strSearch, 0, 20, "FR");
-        //echo $strSearch;
-        //$url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
-        // Go to the symfony.com website
+        $nb = 20;
+
+        //Compose the url for the request
+        $url = $this->queryToUrlBing($strSearch, 0, $nb, "fr-FR");
+
+        // Launch the request trough the crawler
         $crawler = $client->request('GET', $url);
 
-        $nodeValues = $crawler->filter('ol > div')->each(function (Crawler $node, $i) {
-            return $node->text();
+        //We get the headings of the search Results
+        $resultHeaders = $crawler->filter('ol#b_results li.b_algo h2')->each(function (Crawler $node, $i) {
+            return $node->html();
         });
-        $array = array_flatten($nodeValues);
-        foreach ($array as $data)
+        $resultHeader = array_flatten($resultHeaders);
+
+        //Getting the result links
+        $resultLinks = $crawler->filter('ol#b_results li.b_algo div cite')->each(function (Crawler $node, $i) {
+            return $node->html();
+        });
+        $resultLink = array_flatten($resultLinks);
+
+        $resultBodys = $crawler->filter('ol#b_results li.b_algo div p')->each(function (Crawler $node, $i) {
+            return $node->html();
+        });
+        $resultBody = array_flatten($resultBodys);
+
+
+        $count = 0;
+        $except = $nb + 1 ;
+        $searchResults = [];
+        foreach ($resultHeader as $data)
         {
-            print ($data."<br> <br> ");
+            if(strpos($data,'mages for') == false)
+            {
+               // print ($count."  ".$data."<br> <br> ");
+                //print ($count."  ".$except."<br> <br> ");
+                if($count < $except)
+                {
+                    $searchResult = new Search_Result([
+                        'title' => $resultHeader[$count],
+                        'link' => $resultLink[$count],
+                        'preview' => $resultBody[$count]
+                    ]);
+
+                    array_push($searchResults,$searchResult);
+                }
+                else{
+                    $searchResult = new Search_Result([
+                        'title' => $resultHeader[$count],
+                        'link' => $resultLink[$count - 1],
+                        'preview' => $resultBody[$count - 1],
+                        'source' => 'alto'
+                    ]);
+                    array_push($searchResults,$searchResult);
+                }
+            }
+            else
+            {
+                $except = $count;
+            }
+            $count++;
         }
+        //print count($searchResults);
+
         //print_r($nodeValues);//*/
+        return response()->json($searchResults);
 
     }
+
 
 
     public function searchs()
@@ -207,21 +284,18 @@ class CrawlerController extends Controller
         ), true);
     }
 
-    function queryToUrlBing($query, $start=null, $perPage=100, $country="US") {
+    function queryToUrlBing($query, $start=null, $perPage=100, $country="") {
         return "http://www.bing.com/search?" . http_build_query(array(
             // Query
-            "q"     => urlencode($query),
+            "q"     => $query,
             // Country (geolocation presumably)
-            "gl"    => $country,
+            "mkt"    => $country,
             // Start offset
-            "start" => $start,
-            // Number of result to a page
-            "num"   => $perPage
+            "first" => $start,
+            // Number of result to a page less than 50
+            "count"   => $perPage
         ), true);
     }
 
-    function queryToUrlDuckgo($query) {
-        return "http://duckduckgo.com/?q=search&kp=-1&kl=us-en&kg=g";
-    }
 
 }
