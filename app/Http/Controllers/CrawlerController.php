@@ -13,6 +13,11 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class CrawlerController extends Controller
 {
+
+    public $resultHeader = [];
+    public $resultLink = [];
+    public $resultBody = [];
+
     /**
      *
      */
@@ -97,9 +102,33 @@ class CrawlerController extends Controller
         // Go to the symfony.com website
         $crawler = $client->request('GET', $url);
 
+
+
         //on récupère les entêtes des résultats
-         $resultHeaders = $crawler->filter('td div#center_col h3 a')->each(function (Crawler $node, $i) {
-             return $node->html();
+        $crawler->filter('td div#center_col div.g')->each(function (Crawler $node, $i) {
+            $header = $node->filter('h3 a')->html();
+
+            if(strpos($header,'mages for') == false)
+            {
+                array_push($this->resultHeader,$header);
+                $link = $node->filter('div cite')->html();
+
+                array_push($this->resultLink,$link);
+
+                if(strpos($link,'books.google.com') == false)
+                {
+                    array_push($this->resultBody,$node->filter('div span.st')->html());
+                }
+                else{
+                    array_push($this->resultBody,$node->filter('div.s')->html());
+                }
+            }
+
+
+           //print_r($this->resultHeader);
+        });
+        /* $resultHeaders = $crawler->filter('td div#center_col h3 a')->each(function (Crawler $node, $i) {
+             return $node->fil;
          });
         $resultHeader = array_flatten($resultHeaders);
 
@@ -112,41 +141,25 @@ class CrawlerController extends Controller
         $resultBodys = $crawler->filter('td div#center_col div span.st')->each(function (Crawler $node, $i) {
             return $node->html();
         });
-        $resultBody = array_flatten($resultBodys);
+        $resultBody = array_flatten($resultBodys);//*/
 
 
         $count = 0;
-        $except = $nb + 1 ;
-        $searchResults = [];
-        foreach ($resultHeader as $data)
-        {
-            if(strpos($data,'mages for') == false)
-            {
-                //print ($count."  ".$data."<br> <br> ");
-                //print ($count."  ".$except."<br> <br> ");
-                if($count < $except)
-                {
-                    $searchResult = new Search_Result([
-                       'title' => $resultHeader[$count],
-                        'link' => $resultLink[$count],
-                        'preview' => $resultBody[$count]
-                    ]);
 
-                    array_push($searchResults,$searchResult);
-                }
-                else{
-                    $searchResult = new Search_Result([
-                        'title' => $resultHeader[$count],
-                        'link' => $resultLink[$count - 1],
-                        'preview' => $resultBody[$count - 1]
-                    ]);
-                    array_push($searchResults,$searchResult);
-                }
-            }
-            else
-            {
-                $except = $count;
-            }
+        $searchResults = [];
+        foreach ($this->resultHeader as $data)
+        {
+            //print ($count."  ".$data."<br> <br> ");
+            //print ($count."  ".$except."<br> <br> ");
+
+             $searchResult = new Search_Result([
+                   'title' => $this->resultHeader[$count],
+                    'link' => $this->resultLink[$count],
+                    'preview' => $this->resultBody[$count]
+                ]);
+
+                array_push($searchResults,$searchResult);
+
             $count++;
         }
         //print count($searchResults);

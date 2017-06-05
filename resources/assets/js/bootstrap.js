@@ -18,6 +18,9 @@ require('bootstrap-sass');
  */
 
 window.Vue = require('vue');
+window.Vuex = require('vuex');
+
+Vue.use(Vuex);
 
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests
