@@ -1,6 +1,6 @@
 <template>
     <form style="margin-left: 20%" id="form_app_hero"  @submit.prevent="onSubmit" @keydown="form.errors.clear()">
-        <div class="column is-three-quarters">
+        <div class="column is-three-quarters has-text-centered">
             <div class="field has-addons">
                 <p class="control has-icons-left is-expanded">
                     <input class="input has-text-centered"  type="text" :placeholder="name" v-model="form.keywords">
@@ -27,6 +27,7 @@
         props:{
             name: {required: true},
             url: {required: false},
+            error: {required: false}
         },
 
         data(){
@@ -50,18 +51,50 @@
 
         mounted(){
             // this.urls = this.url;
-            console.log('Search mounted.');
+            $(window).scroll(function () {
+                if ($(window).scrollTop() > 280) {
+                    $('#nav_tab').addClass('search-fixed');
+                }
+                if ($(window).scrollTop() < 281) {
+                    $('#nav_tab').removeClass('search-fixed');
+                }
+            });
         },
 
         methods:{
 
             onSubmit(){
-               this.requestOn = true,
+                this.$store.commit('load',null);
+                this.form.errors.clear();
+                var show_error = true;
+                var erreur = new Object();
+                this.requestOn = true;
                 this.form.post_(this.url).then(result => {
-                    alert('All done'),
-                        this.requestOn = false
+                    this.form.errors.clear();
+                    this.requestOn = false;
+                        show_error = false;
                         this.$store.commit('load',result)
+                }).catch(error => {
+
+                   // alert(error.indexOf('DOCTYPE'));
+                    if(error.hasOwnProperty('keywords'))
+                    {
+                        show_error = false;
+                        this.requestOn = false
+                    }
+                    else
+                    {
+                        var error = [];
+                        error.push(this.error);
+                        erreur.keywords = error;
+                        this.form.errors.record(erreur);
+                    }
+
+                    this.requestOn = false
+                    //console.log(error)
                 });
+
+
                 //this.form.post('/search').then(status => alert('All done'));
             },
 
@@ -70,3 +103,12 @@
         }
     }
 </script>
+
+<style>
+    .search-fixed {
+    position: fixed;
+    top: 0px;
+        width: 100%;
+        z-index: 1002
+    }
+</style>

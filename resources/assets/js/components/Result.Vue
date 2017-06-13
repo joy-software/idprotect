@@ -8,13 +8,12 @@
                     </figure>
                 </div-->
                 <div class="media-content">
-                    <p class="title is-3"><slot name="title"></slot></p>
-                    <p class="subtitle is-6"><a><slot name="link"></slot></a></p>
+                    <p class="title is-4" v-html="title"></p>
+                    <p class="subtitle is-6"><a v-html="link"></a></p>
                 </div>
             </div>
 
-            <div class="content">
-                <slot></slot>
+            <div class="content" v-html="preview">
             </div>
         </div>
     </div>
@@ -24,14 +23,17 @@
 
     export default {
         props:{
-
+            title: {required: true},
+            preview: {required: true},
+            link: {required: true}
         },
 
         data(){
             return{
-              //  isActive: false,
-
-
+              //  isActive: false
+                //title: this.title,
+                //preview: this.preview,
+                //link: this.link
             }
         },
 
@@ -46,7 +48,7 @@
 
         mounted(){
            // this.isActive = this.selected;
-            console.log('Result mounted.');
+            //console.log('Result mounted.');
         },
 
         methods:{

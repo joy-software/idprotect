@@ -1,8 +1,8 @@
 <template>
     <div>
-        <nav class="nav has-shadow">
+        <nav class="nav has-shadow" id="nav_tab">
             <div class="container">
-                <div class="nav-center">
+                <div class="nav-center has-text-centered">
                     <a v-for="tab in tabs"  class="nav-item is-tab" :class="{'is-active': tab.isActive}" :href="tab.href" @click="selectTab(tab)">
                         {{tab.name}}
                     </a>

@@ -110,10 +110,10 @@
         </nav>
 
     </div>
-        <section class="hero is-primary">
+        <section class="hero is-primary" id="hero_hero">
             <div class="hero-body">
                 <div class="container">
-                    <div class="columns is-vcentered">
+                    <div class="columns is-vcentered" >
                         <div class="column">
                             <p class="title">
                                 @lang('menu.hero_title')
@@ -134,7 +134,10 @@
 
             <div class="hero-foot">
                 <div class="container">
-                       <search name="@lang('menu.hero_search_placeholder')" url="{{url(App::getLocale().'/search')}}" >@lang('menu.hero_search_button')</search>
+                       <search name="@lang('menu.hero_search_placeholder')"
+                               url="{{url(App::getLocale().'/search')}}"
+                               error="@lang('menu.hero_search_error')"
+                       >@lang('menu.hero_search_button')</search>
                 </div>
 
             </div>

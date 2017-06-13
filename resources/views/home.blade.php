@@ -18,12 +18,6 @@
 <tabs>
     <tab name="@lang('menu.nav_search_result_all')" :selected="true">
 
-        <result>
-
-            <template slot="title"> "<b>Joy</b>"<b>Joy</b></template>
-            <template slot="link"> "<b>Joy</b>"<b>Joy</b></template>
-            <template> "<b>Joy</b>"<b>Joy</b></template>
-        </result>
         <h1>Here is the content of the About me Tab</h1>
 
     </tab>

@@ -18,7 +18,8 @@ class CreateTableSearchResult extends Migration
             $table->string('title');
             $table->string('link');
             $table->text('preview');
-            $table->enum('source',['soprano','alto'])->default('soprano');
+            $table->enum('source', ['soprano', 'alto'])->default('soprano');
+            $table->enum('category', ['all', 'social', 'documents', 'webwites', 'images', 'videos'])->unsigned();
             $table->timestamps();
 
             $table->integer('user_id')->unsigned()->nullable();
@@ -27,6 +28,7 @@ class CreateTableSearchResult extends Migration
                 ->on('users')
                 ->onDelete('restrict')
                 ->onUpdate('restrict');
+
         });
     }
 

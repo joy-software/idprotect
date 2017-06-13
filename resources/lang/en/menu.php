@@ -22,6 +22,7 @@ return [
     'hero_title' => 'Keeping an eye on the Web',
     'hero_message' => 'Secure and inform yourself about your  <strong>digital identity</strong> at any time.',
     'hero_search_placeholder' => 'Enter your name',
+    'hero_search_error' => 'An error occurred while running, refresh the page before continuing',
     'hero_search_button' => 'Search',
     'nav_search_result_all' => 'All',
     'nav_search_result_social' => 'Social Networks',

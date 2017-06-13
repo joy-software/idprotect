@@ -23,6 +23,7 @@ return [
     'hero_message' => "Sécurisez et informez vous sur votre <strong>identité numérique</strong> à tout moment.",
     'hero_search_placeholder' => 'Saisissez votre nom',
     'hero_search_button' => 'Rechercher',
+    'hero_search_error' => 'Une erreur s\'est produite lors de l\'exécution, actualisez la page avant de continuer',
     'nav_search_result_all' => 'Tout',
     'nav_search_result_social' => 'Réseaux Sociaux',
     'nav_search_result_document' => 'Documents',

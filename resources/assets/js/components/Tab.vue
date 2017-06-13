@@ -7,14 +7,12 @@
         </div>
 
         <div class="column is-half">
-            <result v-for="resul in results">
-
-                <template slot="title" v-html="resul.title"></template>
-                <template slot="link" v-html="resul.link"></template>
-                <template v-html="resul.preview"></template>
-            </result>
+            <template v-for="resul in results">
+                <result  :title="resul.title" :preview="resul.preview" :link="resul.link" style="margin-bottom: 15px">
+                </result>
+            </template>
             <br/>
-            <slot></slot>
+            <br/>
          </div>
 
         <div class="column">

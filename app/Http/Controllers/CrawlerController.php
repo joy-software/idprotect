@@ -16,7 +16,10 @@ class CrawlerController extends Controller
 
     public $resultHeader = [];
     public $resultLink = [];
+    public $resultLink_text = [];
     public $resultBody = [];
+    public $searchResults = [];
+    public $count = 0;
 
     /**
      *
@@ -24,10 +27,11 @@ class CrawlerController extends Controller
     public function view($requete)
     {
 
-        $client = new GuzzleClient();
+
+       $client = new GuzzleClient();
         if(empty($requete)) $requete = "ENSP Yaounde";
         $strSearch = $requete;
-        $url = $this->queryToUrl($strSearch, 0, 20, "FR");
+        $url = $this->queryToUrl($strSearch, 0, 20, "CM");
         //echo $strSearch;
        // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
@@ -86,87 +90,467 @@ class CrawlerController extends Controller
         return $crawler->getBody();
     }
 
-    public function search($requete)
+    /***
+     * Getting the result over a search request
+     * @param $request
+     * @param array $country
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function search($request, $country = ['CM','FR','US'])
+    {
+        /*$command = "allintitle%3A+";
+        $command1 = "insubject%3A+";
+        if(empty($request)) $request = "ENSP Yaounde";
+
+         $nb = 40;
+        $counts = 0;
+        $strSearch = '"'.$request.'"';
+        //echo $strSearch;
+        $this->fetching($strSearch,$country,$nb);
+        $counts = $this->recording($request,$counts,false);
+
+
+        $this->count = 0;
+        $strSearch = $request;
+        $this->fetching($strSearch,$country,$nb);
+        $this->recording($request,$counts,true);
+//*/
+
+        //$this->searchSocial($request,$country);
+        $this->searchSocial($request,$country,2);
+       // $this->searchSocial($request,$country,3);
+        //$this->searchSocial($request,$country,4);
+
+
+        return response()->json($this->searchResults);//*/
+    }
+
+    /**
+     * Getting result of the search query
+     * @param $strSearch
+     * @param $country
+     * @param $nb
+     */
+    public function fetching($strSearch,$country,$nb)
     {
         $client = new Client();
-       // $client->setClient(new GuzzleClient());
+        // $client->setClient(new GuzzleClient());
         $client->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
-        $command = "allintitle%3A+";
-        $command1 = "insubject%3A+";
-        if(empty($requete)) $requete = "ENSP Yaounde";
-        $strSearch = $requete;
-        $nb = 20;
-        $url = $this->queryToUrl($strSearch, 0, $nb, "CM");
-        //echo $strSearch;
-        //$url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
-        // Go to the symfony.com website
-        $crawler = $client->request('GET', $url);
 
+        foreach ($country as $pays) {
+            $url = $this->queryToUrl($strSearch, 0, $nb, $pays);
+            //echo $strSearch;
+            //$url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
+            // Go to the symfony.com website
+            $crawler = $client->request('GET', $url);
 
+            $this->resultHeader[$this->count] = [];
+            $this->resultLink[$this->count] = [];
+            $this->resultLink_text[$this->count] = [];
+            $this->resultBody[$this->count] = [];
+            //on récupère les entêtes des résultats
+            $crawler->filter('td div#center_col div.g')->each(function (Crawler $node, $i) {
 
-        //on récupère les entêtes des résultats
-        $crawler->filter('td div#center_col div.g')->each(function (Crawler $node, $i) {
-            $header = $node->filter('h3 a')->html();
+                $header = $node->filter('h3 a');
+                if ($header->count() > 0) {
+                    $header = $header->html();
+                    //print("<br/>".$header);
+                    if (strpos($header, 'mages for') == false) {
+                        array_push($this->resultHeader[$this->count], $header);
+                        $link = $node->filter('div cite')->html();
 
-            if(strpos($header,'mages for') == false)
+                        array_push($this->resultLink[$this->count], $link);
+                        $link = $node->filter('div cite')->text();
+                        array_push($this->resultLink_text[$this->count], $link);
+
+                        if (strpos($link, 'books.google.com') == false) {
+                            array_push($this->resultBody[$this->count], $node->filter('div span.st')->html());
+                        } else {
+                            array_push($this->resultBody[$this->count], $node->filter('div.s')->html());
+                        }
+                    }
+                }
+            });
+            $this->count++;
+
+            //print count($searchResults);
+        }
+    }
+
+    /**
+     * Putting the search result inside an array of object
+     * @param $request
+     * @param $count
+     * @return mixed
+     */
+    public function recording($request, $count,$after)
+    {
+        $counts = $count;
+        $min = count($this->resultHeader[0]);
+        foreach ($this->resultHeader as $header)
+        {
+            if(count($header) < $min)
             {
-                array_push($this->resultHeader,$header);
-                $link = $node->filter('div cite')->html();
+                $min = count($header);
+            }
+        }
 
-                array_push($this->resultLink,$link);
+        if($min > 0)
+        {
+            // echo $min;
+            $compt = 0;
+            for ($count = 0; $count < $min; $count++) {
 
-                if(strpos($link,'books.google.com') == false)
+                for ($pas = 0; $pas < count($this->resultHeader); $pas++)
                 {
-                    array_push($this->resultBody,$node->filter('div span.st')->html());
+                    $searchResult = new Search_Result([
+                        'title' => $this->resultHeader[$pas][$count],
+                        'link' => $this->resultLink[$pas][$count],
+                        'links' => $this->resultLink_text[$pas][$count],
+                        'preview' => $this->resultBody[$pas][$count],
+                        'category' => 'all'
+                    ]);
+
+                    if(!$this->contains_searchResult($searchResult,$request))
+                    {
+                        if($after)
+                        {
+                            array_splice( $this->searchResults, 2*$compt, 0, array($searchResult) );
+                        }
+                        else
+                        {
+                            array_push($this->searchResults, $searchResult);
+                        }
+                        $compt++;
+                        $counts++;
+                    }
+
                 }
-                else{
-                    array_push($this->resultBody,$node->filter('div.s')->html());
+            }
+        }
+        return $counts;
+    }
+
+    /**
+     * Putting the search result inside an array of object
+     * @param $request
+     * @param $count
+     * @param $after
+     * @param $socials
+     * @return mixed
+     */
+    public function recording_social($request, $count,$after,$socials)
+    {
+        $counts = $count;
+
+        do
+        {
+            $min = count($this->resultHeader[0]);
+            $pos = [];
+            $nbr = 0;
+
+            foreach ($this->resultHeader as $header) {
+                if (count($header) < $min) {
+                    $min = count($header);
                 }
+            }
+            foreach ($this->resultHeader as $header) {
+                if (count($header) == $min) {
+                    array_push($pos,$nbr);
+                }
+                $nbr++;
             }
 
 
-           //print_r($this->resultHeader);
-        });
-        /* $resultHeaders = $crawler->filter('td div#center_col h3 a')->each(function (Crawler $node, $i) {
-             return $node->fil;
-         });
-        $resultHeader = array_flatten($resultHeaders);
+
+            if ($min > 0) {
+                 //echo $min . "     ".count($this->resultHeader);
+                $compt = 0;
+                for ($count = 0; $count < $min; $count++) {
+
+                    for ($pas = 0; $pas < count($this->resultHeader); $pas++) {
+                        $searchResult = new Search_Result([
+                            'title' => $this->resultHeader[$pas][$count],
+                            'link' => $this->resultLink[$pas][$count],
+                            'links' => $this->resultLink_text[$pas][$count],
+                            'preview' => $this->resultBody[$pas][$count],
+                            'category' => 'all'
+                        ]);
+
+                        if (!$this->contains_searchResult_social($searchResult, $request, $socials)) {
+                            if ($after) {
+                                array_splice($this->searchResults, 2 * $compt, 0, array($searchResult));
+                            } else {
+                                array_push($this->searchResults, $searchResult);
+                            }
+                            $compt++;
+                            $counts++;
+                        }
+
+                    }
+                }
+            }
+            //unset($this->resultHeader[$pos]);
+            foreach ($pos as $po)
+            {
+                array_splice($this->resultHeader, $po, 1);
+                array_splice($this->resultLink, $po, 1);
+                array_splice($this->resultBody, $po, 1);
+                array_splice($this->resultLink_text, $po, 1);
+            }
 
 
-        $resultLinks = $crawler->filter('td div#center_col div cite')->each(function (Crawler $node, $i) {
-            return $node->html();
-        });
-        $resultLink = array_flatten($resultLinks);
-
-        $resultBodys = $crawler->filter('td div#center_col div span.st')->each(function (Crawler $node, $i) {
-            return $node->html();
-        });
-        $resultBody = array_flatten($resultBodys);//*/
-
-
-        $count = 0;
-
-        $searchResults = [];
-        foreach ($this->resultHeader as $data)
-        {
-            //print ($count."  ".$data."<br> <br> ");
-            //print ($count."  ".$except."<br> <br> ");
-
-             $searchResult = new Search_Result([
-                   'title' => $this->resultHeader[$count],
-                    'link' => $this->resultLink[$count],
-                    'preview' => $this->resultBody[$count]
-                ]);
-
-                array_push($searchResults,$searchResult);
-
-            $count++;
         }
-        //print count($searchResults);
+        while(count($this->resultHeader)>0);
+        return $counts;
+    }
 
-         //print_r($nodeValues);//*/
-        return response()->json($searchResults);
+    /**
+     * To check if a result is already inside the result array
+     * if not we can do the push
+     * @param $searchResult
+     * @param $request
+     * @return bool
+     */
+    public function contains_searchResult($searchResult, $request)
+    {
+        $terms = explode(" ",$request);
+        $test = true;
+        //print_r($terms);
 
+        //check if the header/title of the result contains the keywords of the search query
+        foreach ($terms as $term)
+            {
+                if($test)
+                {
+
+                    if(strpos(strtolower($searchResult->title) ,strtolower($term)) !== false)
+                    {
+                        $test = true;
+                    }
+                    else
+                    {
+                        $test = false;
+                    }
+                }
+            }
+            if(!$test)
+            {
+                //check if the link of the result contains the keywords of the search query
+                $test = true;
+                foreach ($terms as $term)
+                {
+                    if($test)
+                    {
+                        if(strpos(strtolower($searchResult->link) ,strtolower($term)) !== false)
+                        {
+                            $test = true;
+                        }
+                        else
+                        {
+                            $test = false;
+                        }
+                    }
+                }
+                if(!$test)
+                {
+                    //check if the body of the result contains the keywords of the search query
+                    $test = true;
+                    foreach ($terms as $term)
+                    {
+                        if($test)
+                        {
+                           // echo strtolower($searchResult->preview);
+                            if(strpos(strtolower($searchResult->preview) ,strtolower($term)) !== false)
+                            {
+                                $test = true;
+                               // echo "<br/>";
+                            }
+                            else
+                            {
+                                $test = false;
+                            }
+                        }
+                    }
+                }
+            }
+            if(!$test)
+            {
+                return true;
+            }
+            else
+            {
+                //echo "else <br/>";
+                //check the result is already record
+                foreach ($this->searchResults as $result)
+                {
+                   // echo "<br/> a";
+                    if(strpos(strtolower($result->links) ,strtolower($searchResult->links)) !== false)
+                    {
+                       // echo "return 1";
+                        return true;
+                    }
+                    //echo "yes";
+
+                }
+            }
+       // echo "rien";
+
+        return false;
+    }
+
+    /**
+     * To check if a result is already inside the result array
+     * if not we can do the push
+     * @param $searchResult
+     * @param $request
+     * @param $socials
+     * @return bool
+     */
+    public function contains_searchResult_social($searchResult, $request,$socials)
+    {
+        $terms = explode(" ",$request);
+        $test = false;
+        //print_r($terms);
+
+        //check if the header/title of the result contains the keywords of the search query
+
+        foreach ($socials as $social) {
+            if (strpos(strtolower($searchResult->links), strtolower($social)) !== false) {
+                $test = true;
+                break;
+            }
+        }//*/
+        if($test)
+        {
+            foreach ($terms as $term)
+            {
+                if($test)
+                {
+                    if(strpos(strtolower($searchResult->title) ,strtolower($term)) !== false)
+                    {
+                        $test = true;
+                    }
+                    else
+                    {
+                        $test = false;
+                    }
+                }
+            }
+            if(!$test)
+            {
+                //check if the link of the result contains the keywords of the search query
+                $test = true;
+                foreach ($terms as $term)
+                {
+                    if($test)
+                    {
+
+                        if(strpos(strtolower($searchResult->link) ,strtolower($term)) !== false)
+                        {
+                            $test = true;
+                        }
+                        else
+                        {
+                            $test = false;
+                        }
+                    }
+                }
+                if(!$test)
+                {
+                    //check if the body of the result contains the keywords of the search query
+                    $test = true;
+                    foreach ($terms as $term)
+                    {
+                        if($test)
+                        {
+                            // echo strtolower($searchResult->preview);
+                            if(strpos(strtolower($searchResult->preview) ,strtolower($term)) !== false)
+                            {
+
+                                // echo "<br/>";
+                            }
+                            else
+                            {
+                                $test = false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if(!$test)
+        {
+            return true;
+        }
+        else
+        {
+            //echo "else <br/>";
+            //check the result is already record
+            foreach ($this->searchResults as $result)
+            {
+                // echo "<br/> a";
+                if(strpos(strtolower($result->links) ,strtolower($searchResult->links)) !== false)
+                {
+                    return true;
+                }
+                //echo "yes";
+
+            }
+        }
+        // echo "rien";
+
+        return false;
+    }
+
+    /**
+     * search for some traces on social media
+     * @param $request
+     * @param array $country
+     * @param int $index
+     */
+    public function searchSocial($request,$country = ['CM'],$index = 1)
+    {
+        $socials = [];
+        switch ($index)
+        {
+            case 1: $socials = ['Facebook','Twitter','LinkedIn','Google+','YouTube'];
+                    break;
+            case 2: $socials = ['Instagram','Pinterest','Meetup','badoo','meetic'];
+                    break;
+            case 3: $socials = ['Flickr','VK','Reddit','Ask.fm','Tumblr','Vine'];
+                    break;
+            case 4: $socials = ['viadeo','skyrock','myspace','tagged'];
+                    break;
+        }
+
+
+        $counts = 0;
+        $strSearch = '"'.$request.'"';
+        $nb = 5;
+        $this->count = 0;
+
+
+        foreach ($socials as $social) {
+
+            //echo $strSearch;
+            $this->fetching($strSearch." ".$social,$country,$nb);
+            //$counts = $this->recording($request,$counts,false);
+        }
+
+      /*  $this->count = 0;
+        $strSearch = $request;
+
+        foreach ($socials as $social) {
+
+            //echo $strSearch;
+            $this->fetching($strSearch." ".$social,$country,$nb);
+
+        }//*/
+         $counts = $this->recording_social($request,$counts,false,$socials);
+       // echo $counts;
+
+        //
     }
 
     public function searchBing($requete)
@@ -287,9 +671,11 @@ class CrawlerController extends Controller
     function queryToUrl($query, $start=null, $perPage=100, $country="US") {
         return "http://www.google.com/search?" . http_build_query(array(
             // Query
-            "q"     => urlencode($query),
+            //"q"     => urlencode($query),
+            "q"     => $query,
             // Country (geolocation presumably)
             "gl"    => $country,
+            //"siteSearch" => "twitter",
             // Start offset
             "start" => $start,
             // Number of result to a page
