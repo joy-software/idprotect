@@ -19,7 +19,7 @@ class CreateTableSearchResult extends Migration
             $table->string('link');
             $table->text('preview');
             $table->enum('source', ['soprano', 'alto'])->default('soprano');
-            $table->enum('category', ['all', 'social', 'documents', 'webwites', 'images', 'videos'])->unsigned();
+            $table->enum('category', ['all', 'social', 'documents', 'webwites', 'images', 'videos'])->default('all');
             $table->timestamps();
 
             $table->integer('user_id')->unsigned()->nullable();
