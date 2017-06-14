@@ -8,6 +8,7 @@ use GuzzleHttp\Client as GuzzleClient;
 
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -20,6 +21,12 @@ class CrawlerController extends Controller
     public $resultBody = [];
     public $searchResults = [];
     public $count = 0;
+    public $proxy = null;
+
+    public function __construct()
+    {
+        $this->proxy = $this->get_proxies();
+    }
 
     /**
      *
@@ -28,10 +35,12 @@ class CrawlerController extends Controller
     {
 
 
-       $client = new GuzzleClient();
+       $client = new GuzzleClient($this->init());
         if(empty($requete)) $requete = "ENSP Yaounde";
         $strSearch = $requete;
-        $url = $this->queryToUrl($strSearch, 0, 20, "CM");
+        //$url = $this->queryToUrl($strSearch, 0, 20, "CM");
+        $url = "https://www.whatismyip.com";
+      //  $url = "https://www.iplocation.net/find-ip-address";
         //echo $strSearch;
        // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
@@ -81,13 +90,125 @@ class CrawlerController extends Controller
     public function views()
     {
 
-        $client = new GuzzleClient();
+        $client = new GuzzleClient($this->init());
         $strSearch = "ENSP Yaounde";
         //echo $strSearch;
         $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
         // Go to the symfony.com website
         $crawler = $client->request('GET', $url);
         return $crawler->getBody();
+    }
+
+    /**
+     * The initialisation of our crawler
+     * @return array
+     */
+    public function init()
+    {
+        $proxys = $this->proxy;
+        $timeout = Config::get('crawler.timeout');
+        $timeoutConnect = Config::get('crawler.timeoutConnect');
+
+        $config = [
+            'curl' => [
+                CURLOPT_TIMEOUT => $timeout,
+                CURLOPT_CONNECTTIMEOUT => $timeoutConnect
+            ],
+
+            'verify' => Config::get('crawler.pathHttpsKeyFile')
+        ];
+
+        $useProxy = strtolower(Config::get('crawler.useProxy'));
+
+        if ($useProxy != 'false') {
+
+            $index = rand(0, count($proxys) - 1);
+            $proxy = $proxys[$index];
+
+            $config['proxy'] = [$proxy['protocol'] => 'tcp://' . $proxy['ip'] . ':' . $proxy['port']];
+        }
+
+        return $config;
+    }
+
+
+    /**
+     * Get proxy files from email account or local proxy configurations
+     * @return array|mixed
+     */
+    public function get_proxies()
+    {
+        $proxyProvenance = Config::get('crawler.proxyProvenance');
+
+        if ($proxyProvenance != 'local') {
+
+            $date = date('Y-m-d', time());
+
+            if (! Storage::disk('crawler')->has('proxy/' . $date)) {
+
+                $client = new ImapClient(Config::get('imap.accounts.proxy'));
+                $client->connect();
+                $folder = $client->getFolders();
+                $folder = $folder[0];
+                $message = $client->getMessages($folder, 'FROM "' . Config::get('crawler.proxyEmailSender') . '" SUBJECT "' . Config::get('crawler.proxyEmailSubject') . '" ON ' . $date);
+
+                if (empty($message)) {
+
+                    if ($proxy = json_decode(env('PROXY_CRAWLER'), true)) {
+
+                        return $proxy;
+
+                    } else {
+
+                        throw new UnreachableServerException('Proxy files are unvailable');
+                    }
+                }
+
+                Storage::disk('crawler')->makeDirectory('proxy/' . $date);
+
+                $attachments = array();
+                $proxyZip = array();
+                $i = 0;
+
+                foreach ($message as $msg) {
+
+                    $attachments[$i] = $msg->attachments;
+                    $proxyZip[$i] = $attachments[$i][0];
+
+                    Storage::disk('crawler')->makeDirectory('proxy/' . $date .  '/proxy_' . $i);
+                    Storage::disk('crawler')->put('proxy/' . $date . '/proxy_' . $i . '.zip', $proxyZip[$i]->content);
+
+                    $zip = new \ZipArchive();
+
+
+                    $res = $zip->open(storage_path('crawler') . '/proxy/' . $date . '/proxy_' . $i . '.zip');
+
+                    if  ($res == true) {
+
+                        $zip->extractTo(storage_path('crawler') . '/proxy/' . $date . '/proxy_' . $i);
+                        $zip->close();
+                    }
+
+                    $i++;
+                }
+
+                return $this->storeProxyInEnv();
+
+            } else {
+
+                if ($proxy = json_decode(env('PROXY_CRAWLER'), true)) {
+
+                    return $proxy;
+                }
+
+                return $this->storeProxyInEnv();
+            }
+
+        } else {
+
+            return Config::get('crawler.proxy');
+        }
+
     }
 
     /***
@@ -135,7 +256,7 @@ class CrawlerController extends Controller
     public function fetching($strSearch,$country,$nb)
     {
         $client = new Client();
-        // $client->setClient(new GuzzleClient());
+         $client->setClient(new GuzzleClient($this->init()));
         $client->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
 
 
