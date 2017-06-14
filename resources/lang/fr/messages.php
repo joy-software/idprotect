@@ -13,7 +13,10 @@ return [
     |
     */
 
-    'previous' => '&laquo; Previous',
-    'next' => 'Next &raquo;',
+    'previous' => '&laquo; Précédent',
+    'next' => 'Suivant &raquo;',
+    'emptyResultMessage' => 'Aucun résultat pertinent n\'a été trouvé',
+    'beforeResult' => 'Environ ',
+    'afterResult' => ' résultat(s) parmi les plus pertinents.',
 
 ];

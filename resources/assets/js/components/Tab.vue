@@ -7,10 +7,16 @@
         </div>
 
         <div class="column is-half">
+            <template v-if="!emptyResult && search">
+                <h1><slot name="before"></slot><strong v-text="number"></strong> <slot name="after"></slot></h1>
+            </template>
             <template v-for="resul in results">
-                <result  :title="resul.title" :preview="resul.preview" :link="resul.link" style="margin-bottom: 15px">
+                <result  :title="resul.title" :preview="resul.preview" :link="resul.links" style="margin-bottom: 15px">
                 </result>
             </template>
+           <alert v-if="emptyResult && search" @close="CloseNotif">
+               <slot name="emptyResultMessage"></slot>
+           </alert>
             <br/>
             <br/>
          </div>
@@ -45,7 +51,20 @@ export default {
 
         results () {
             return this.$store.state.a.results
+        },
+
+        search(){
+            return this.$store.state.a.activeSearch
+        },
+
+        emptyResult(){
+            return Object.keys(this.results).length === 0
+        },
+
+        number(){
+            return Object.keys(this.results).length
         }
+
 
     },
 
@@ -57,6 +76,12 @@ export default {
     created(){
         this.results = this.$children;
     },
+
+    methods:{
+        CloseNotif(){
+            this.$store.commit('deactivate')
+        }
+    }
 }
 
 

@@ -37,7 +37,7 @@ class CrawlerController extends Controller
         // Go to the symfony.com website
         $crawler = $client->request('GET', $url,[
             'headers' => [
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ',
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
             ]]);
         return $crawler->getBody();
     }
@@ -117,9 +117,10 @@ class CrawlerController extends Controller
 //*/
 
         //$this->searchSocial($request,$country);
-        $this->searchSocial($request,$country,2);
+        //$this->searchSocial($request,$country,2);
        // $this->searchSocial($request,$country,3);
         //$this->searchSocial($request,$country,4);
+        $this->searchDocument($request,$country);
 
 
         return response()->json($this->searchResults);//*/
@@ -136,6 +137,7 @@ class CrawlerController extends Controller
         $client = new Client();
         // $client->setClient(new GuzzleClient());
         $client->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+
 
         foreach ($country as $pays) {
             $url = $this->queryToUrl($strSearch, 0, $nb, $pays);
@@ -277,7 +279,7 @@ class CrawlerController extends Controller
                             'category' => 'all'
                         ]);
 
-                        if (!$this->contains_searchResult_social($searchResult, $request, $socials)) {
+                        if (!$this->contains_searchResult($searchResult, $request)) {
                             if ($after) {
                                 array_splice($this->searchResults, 2 * $compt, 0, array($searchResult));
                             } else {
@@ -514,13 +516,13 @@ class CrawlerController extends Controller
         $socials = [];
         switch ($index)
         {
-            case 1: $socials = ['Facebook','Twitter','LinkedIn','Google+','YouTube'];
+            case 1: $socials = ['Facebook.com','Twitter.com','LinkedIn.com','plus.google.com','YouTube.com'];
                     break;
-            case 2: $socials = ['Instagram','Pinterest','Meetup','badoo','meetic'];
+            case 2: $socials = ['Instagram.com','Pinterest.com','Meetup.com','badoo.com','meetic.fr'];
                     break;
-            case 3: $socials = ['Flickr','VK','Reddit','Ask.fm','Tumblr','Vine'];
+            case 3: $socials = ['Flickr.com','VK.com','Reddit.com','Ask.fm','Tumblr.com','Vine.co'];
                     break;
-            case 4: $socials = ['viadeo','skyrock','myspace','tagged'];
+            case 4: $socials = ['viadeo.com','skyrock.com','myspace.com','tagged.com'];
                     break;
         }
 
@@ -532,9 +534,8 @@ class CrawlerController extends Controller
 
 
         foreach ($socials as $social) {
-
             //echo $strSearch;
-            $this->fetching($strSearch." ".$social,$country,$nb);
+            $this->fetching($strSearch." site:".$social,$country,$nb);
             //$counts = $this->recording($request,$counts,false);
         }
 
@@ -549,6 +550,58 @@ class CrawlerController extends Controller
         }//*/
          $counts = $this->recording_social($request,$counts,false,$socials);
        // echo $counts;
+
+        //
+    }
+
+    /**
+     * search for some traces in files
+     * @param $request
+     * @param array $country
+     * @param int $index
+     */
+    public function searchDocument($request,$country = ['CM,US,FR'],$index = 1)
+    {
+        $documents = [];
+        switch ($index)
+        {
+            case 1: $documents = ['pdf','doc', 'docx','xml'];
+                break;
+            case 2: $documents = ['ppt','pptx', 'odp','tex'];
+                break;
+            case 3: $documents = ['gdoc','docm','log','odt','txt'];
+                break;
+            case 4: $documents = ['mp3', 'mp4', 'mpeg', 'flv', 'avi','3gp','dat'];
+                break;
+            case 5: $documents = ['aac','arc','zip','rar', 'jar', 'tar','tgz','iso'];
+                break;
+        }
+
+
+        $counts = 0;
+        //$strSearch = '"'.$request.'"';
+        $strSearch = $request;
+        $nb = 20;
+        $this->count = 0;
+
+
+        foreach ($documents as $document) {
+            //echo $strSearch;
+            $this->fetching($strSearch." filetype:".$document,$country,$nb);
+            //$counts = $this->recording($request,$counts,false);
+        }
+
+        /*  $this->count = 0;
+          $strSearch = $request;
+
+          foreach ($socials as $social) {
+
+              //echo $strSearch;
+              $this->fetching($strSearch." ".$social,$country,$nb);
+
+          }//*/
+        $counts = $this->recording_social($request,$counts,false,$documents);
+        // echo $counts;
 
         //
     }

@@ -1,7 +1,7 @@
 <?php
 
-return [
 
+return [
     /*
     |--------------------------------------------------------------------------
     | Pagination Language Lines
@@ -12,11 +12,6 @@ return [
     | you want to customize your views to better match your application.
     |
     */
-
-    'previous' => '&laquo; Previous',
-    'next' => 'Next &raquo;',
-    'emptyResultMessage' => 'No relevant results found.',
-    'beforeResult' => 'About ',
-    'afterResult' => ' result(s) among the most relevant.',
-
+    'previous' => '&laquo; Précédent',
+    'next'     => 'Suivant &raquo;',
 ];

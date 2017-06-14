@@ -17,24 +17,24 @@
 
 <tabs>
     <tab name="@lang('menu.nav_search_result_all')" :selected="true">
-
-        <h1>Here is the content of the About me Tab</h1>
-
+        <template slot="before">@lang('messages.beforeResult')</template>
+        <template slot="after">@lang('messages.afterResult')</template>
+        <template slot="emptyResultMessage">@lang('messages.emptyResultMessage')</template>
     </tab>
     <tab name="@lang('menu.nav_search_result_social')">
-        <h1>Here is the content of the About Us Tab</h1>
+        <template slot="emptyResultMessage">@lang('messages.emptyResultMessage')</template>
     </tab>
     <tab name="@lang('menu.nav_search_result_document')">
-        <h1>Here is the content of the About couple Tab</h1>
+        <template slot="emptyResultMessage">@lang('messages.emptyResultMessage')</template>
     </tab>
     <tab name="@lang('menu.nav_search_result_site')">
-        <h1>Here is the content of the About our mariage Tab</h1>
+        <template slot="emptyResultMessage">@lang('messages.emptyResultMessage')</template>
     </tab>
     <tab name="@lang('menu.nav_search_result_image')">
-        <h1>Here is the content of the About our mariage Tab</h1>
+        <template slot="emptyResultMessage">@lang('messages.emptyResultMessage')</template>
     </tab>
     <tab name="@lang('menu.nav_search_result_video')">
-        <h1>Here is the content of the About our mariage Tab</h1>
+        <template slot="emptyResultMessage">@lang('messages.emptyResultMessage')</template>
     </tab>
 </tabs>
 @endsection

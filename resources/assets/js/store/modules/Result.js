@@ -5,11 +5,21 @@
 const moduleA = {
     state: {
         results: [],
+        activeSearch: false
     },
     mutations: {
         load (state, payload) {
             state.results = payload
+        },
+        active(state)
+        {
+            state.activeSearch = true;
+        },
+        deactivate(state)
+        {
+            state.activeSearch = false;
         }
+
     },
     actions: {
 

@@ -9,7 +9,7 @@
                 </div-->
                 <div class="media-content">
                     <p class="title is-4" v-html="title"></p>
-                    <p class="subtitle is-6"><a v-html="link"></a></p>
+                    <p class="subtitle is-6"><a v-html="link" :href="link"></a></p>
                 </div>
             </div>
 

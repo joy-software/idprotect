@@ -137,6 +137,7 @@
                        <search name="@lang('menu.hero_search_placeholder')"
                                url="{{url(App::getLocale().'/search')}}"
                                error="@lang('menu.hero_search_error')"
+                               keywords="@lang('validation.custom.keywords.required')"
                        >@lang('menu.hero_search_button')</search>
                 </div>
 

@@ -27,7 +27,8 @@
         props:{
             name: {required: true},
             url: {required: false},
-            error: {required: false}
+            error: {required: false},
+            keywords: {required: false},
         },
 
         data(){
@@ -64,35 +65,46 @@
         methods:{
 
             onSubmit(){
-                this.$store.commit('load',null);
                 this.form.errors.clear();
-                var show_error = true;
-                var erreur = new Object();
-                this.requestOn = true;
-                this.form.post_(this.url).then(result => {
-                    this.form.errors.clear();
-                    this.requestOn = false;
+                let show_error = true;
+                let erreur = new Object();
+                if(this.form.keywords === "")
+                {
+                    let error = [];
+                    error.push(this.keywords);
+                    erreur.keywords = error;
+                    this.form.errors.record(erreur);
+                }
+                else
+                {
+                    this.$store.commit('load',[]);
+                    this.requestOn = true;
+                    this.form.post_(this.url).then(result => {
+                        this.$store.commit('active');
+                        this.form.errors.clear();
+                        this.requestOn = false;
                         show_error = false;
                         this.$store.commit('load',result)
-                }).catch(error => {
+                    }).catch(error => {
 
-                   // alert(error.indexOf('DOCTYPE'));
-                    if(error.hasOwnProperty('keywords'))
-                    {
-                        show_error = false;
+                        // alert(error.indexOf('DOCTYPE'));
+                        if(error.hasOwnProperty('keywords'))
+                        {
+                            show_error = false;
+                            this.requestOn = false
+                        }
+                        else
+                        {
+                            let error = [];
+                            error.push(this.error);
+                            erreur.keywords = error;
+                            this.form.errors.record(erreur);
+                        }
+
                         this.requestOn = false
-                    }
-                    else
-                    {
-                        var error = [];
-                        error.push(this.error);
-                        erreur.keywords = error;
-                        this.form.errors.record(erreur);
-                    }
-
-                    this.requestOn = false
-                    //console.log(error)
-                });
+                        //console.log(error)
+                    });
+                }
 
 
                 //this.form.post('/search').then(status => alert('All done'));
