@@ -77,6 +77,7 @@
                 }
                 else
                 {
+                    this.$store.commit('deactivate');
                     this.$store.commit('load',[]);
                     this.requestOn = true;
                     this.form.post_(this.url).then(result => {

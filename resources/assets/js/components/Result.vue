@@ -2,18 +2,24 @@
     <div class="card">
         <div class="card-content" >
             <div class="media">
-                <!--div class="media-left ">
+                <div class="media-left " v-if="type === 'video'">
                     <figure class="image is-48x48">
                         <img src="http://bulma.io/images/placeholders/96x96.png" alt="Image">
                     </figure>
-                </div-->
-                <div class="media-content">
+                </div>
+                <template v-if="type === 'images'">
+                    <figure class="image is-128x128">
+                        <img :src="link">
+                    </figure>
                     <p class="title is-4" v-html="title"></p>
-                    <p class="subtitle is-6"><a v-html="link" :href="link"></a></p>
+                </template>
+                <div class="media-content" v-else>
+                    <p class="title is-4" v-html="title"></p>
+                    <p class="subtitle is-6" ><a v-html="link" :href="link"></a></p>
                 </div>
             </div>
 
-            <div class="content" v-html="preview">
+            <div class="content" v-html="preview" v-if="type !== 'images'">
             </div>
         </div>
     </div>
@@ -25,7 +31,8 @@
         props:{
             title: {required: true},
             preview: {required: true},
-            link: {required: true}
+            link: {required: true},
+            type: {required: true}
         },
 
         data(){

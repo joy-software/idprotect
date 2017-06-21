@@ -7,6 +7,12 @@ use Goutte\Client;
 use GuzzleHttp\Client as GuzzleClient;
 
 
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Handler\CurlHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleTor\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
@@ -22,6 +28,7 @@ class CrawlerController extends Controller
     public $searchResults = [];
     public $count = 0;
     public $proxy = null;
+    public $stringSearch = "";
 
     public function __construct()
     {
@@ -29,25 +36,47 @@ class CrawlerController extends Controller
     }
 
     /**
-     *
+     * @param Request $request
+     * @param $requete
+     * @return \Psr\Http\Message\StreamInterface
      */
-    public function view($requete)
+    public function view(Request $request,$requete)
     {
 
+        $stack = new HandlerStack();
+        $stack->setHandler(new CurlHandler());
+        $stack->push(Middleware::tor());
+        $client = new GuzzleClient(['handler' => $stack]);
 
-       $client = new GuzzleClient($this->init());
-        if(empty($requete)) $requete = "ENSP Yaounde";
+        //$url = 'https://check.torproject.org/';
+       //$client = new GuzzleClient();
+       //$client = new GuzzleClient($this->init());
+       // if(empty($requete)) $requete = "ENSP Yaounde";
         $strSearch = $requete;
-        //$url = $this->queryToUrl($strSearch, 0, 20, "CM");
-        $url = "https://www.whatismyip.com";
-      //  $url = "https://www.iplocation.net/find-ip-address";
+       // $url = $this->queryToUrl_min($strSearch,"CM");
+       // $url = $this->queryToUrl($strSearch, 0, 20, "CM");
+       // $url = "https://www.whatismyip.com";
+        $url = 'https://spinproxies.com/';
+        //  $url = "https://www.iplocation.net/find-ip-address";
         //echo $strSearch;
        // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
+        $jar = new CookieJar();
+
+      //  $jar->setCookie(SetCookie::fromString($request->cookie('laravel-session')));
+
         // Go to the symfony.com website
         $crawler = $client->request('GET', $url,[
+            'proxy'=>"socks5://127.0.0.1:9050",
             'headers' => [
-                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-            ]]);
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 6.1)',
+            ],
+            'tor_new_identity'           => true,
+            'tor_new_identity_sleep'     => 15,
+            'tor_new_identity_timeout'   => 3,
+            'tor_new_identity_exception' => true,
+            'tor_control_password'       => 'password',//*/
+            //'cookies' => $jar
+        ]);
         return $crawler->getBody();
     }
 
@@ -105,7 +134,7 @@ class CrawlerController extends Controller
      */
     public function init()
     {
-        $proxys = $this->proxy;
+        //$proxys = $this->proxy;
         $timeout = Config::get('crawler.timeout');
         $timeoutConnect = Config::get('crawler.timeoutConnect');
 
@@ -119,16 +148,109 @@ class CrawlerController extends Controller
         ];
 
         $useProxy = strtolower(Config::get('crawler.useProxy'));
+        $config['proxy'] = ['http' => 'tcp://' . '1245857.04.4.1' . ': 1524' ];
+/*
+        if ($useProxy != 'false') {
+
+            $status = 0;
+            do
+            {
+                //$index = rand(0, count($proxys) - 1);
+                $index = 0;
+                $proxy = $proxys[$index];
+
+                //$config['proxy'] = [$proxy['protocol'] => 'tcp://' . $proxy['ip'] . ':' . $proxy['port']];
+                $config['proxy'] = ['socks5' => 'tcp://' . '127.0.0.1' . ': 1524' ];
+               /* try {
+                    $client = new GuzzleClient($config);
+                    $crawler = $client->request('GET', 'http://www.google.com',[
+                        'headers' => [
+                            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                        ]]);
+                    $status = $crawler->getStatusCode();
+                    if($status == 200){
+                        return $config;
+                    }
+                } catch (ConnectException $e) {
+                    //Catch the guzzle connection errors over here.These errors are something
+                    // like the connection failed or some other network error
+                    //array_splice($proxys, $index, 1);
+                }
+               return $config;
+            }
+            while($status != 200);
+
+        }
+//*/
+        return $config;
+
+    }
+
+    /**
+     * The initialisation of our crawler
+     * @param $url
+     * @return null|Crawler
+     */
+    public function launch_proxy($url)
+    {
+        $proxys = $this->proxy;
+        $timeout = Config::get('crawler.timeout');
+        $timeoutConnect = Config::get('crawler.timeoutConnect');
+        $stack = new HandlerStack();
+        $stack->setHandler(new CurlHandler());
+        $stack->push(Middleware::tor());
+
+        $config = [
+            'curl' => [
+                CURLOPT_TIMEOUT => $timeout,
+                CURLOPT_CONNECTTIMEOUT => $timeoutConnect
+            ],
+
+            'verify' => Config::get('crawler.pathHttpsKeyFile'),
+            'handler' => $stack,
+            'proxy'=>"socks5://127.0.0.1:9050",
+            'tor_new_identity'           => true,
+            'tor_new_identity_sleep'     => 15,
+            'tor_new_identity_timeout'   => 3,
+            'tor_new_identity_exception' => true,
+            'tor_control_password'       => 'password',
+
+        ];
+
+        $useProxy = strtolower(Config::get('crawler.useProxy'));
+        $crawler_ = null;
 
         if ($useProxy != 'false') {
 
-            $index = rand(0, count($proxys) - 1);
-            $proxy = $proxys[$index];
+            $status = true;
+            do
+            {
+                //$index = rand(0, count($proxys) - 1);
+                $index = 0;
+                $proxy = $proxys[$index];
 
-            $config['proxy'] = [$proxy['protocol'] => 'tcp://' . $proxy['ip'] . ':' . $proxy['port']];
+                //$config['proxy'] = [$proxy['protocol'] => 'tcp://' . $proxy['ip'] . ':' . $proxy['port']];
+
+                try {
+
+                    $client_ = new Client();
+                    $client_->setClient(new GuzzleClient($config));
+                    $client_->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+                   // $url  = 'http://freeproxylists.net/fr/?c=&pt=&pr=HTTPS&a%5B%5D=0&a%5B%5D=1&a%5B%5D=2&u=90';
+                    $crawler_ = $client_->request('GET', $url);
+
+                } catch (ConnectException $e) {
+                    //Catch the guzzle connection errors over here.These errors are something
+                    // like the connection failed or some other network error
+                    $status = false;
+                }
+            }
+            while($status == false);
+
         }
 
-        return $config;
+        return $crawler_;
+
     }
 
 
@@ -138,6 +260,7 @@ class CrawlerController extends Controller
      */
     public function get_proxies()
     {
+
         $proxyProvenance = Config::get('crawler.proxyProvenance');
 
         if ($proxyProvenance != 'local') {
@@ -208,11 +331,18 @@ class CrawlerController extends Controller
 
             return Config::get('crawler.proxy');
         }
+        /*$url = 'http://freeproxylists.net/fr/?c=&pt=&pr=HTTPS&a%5B%5D=0&a%5B%5D=1&a%5B%5D=2&u=90';
+
+        $client_ = new Client();
+        //$client_->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+        $client_->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36');
+
+        $crawler_ = $client_->request('GET', $url);*/
 
     }
 
     /***
-     * Getting the result over a search request
+     * Getting the result over a search query
      * @param $request
      * @param array $country
      * @return \Illuminate\Http\JsonResponse
@@ -241,7 +371,26 @@ class CrawlerController extends Controller
         //$this->searchSocial($request,$country,2);
        // $this->searchSocial($request,$country,3);
         //$this->searchSocial($request,$country,4);
-        $this->searchDocument($request,$country);
+       // $this->searchDocument($request,$country);
+        //$this->fetching_images($request);
+       // $this->recording_images($request);
+        //print_r($this->fetching_img($this->resultLink_text[0][0]));
+        $this->searchVideo($request);
+
+        return response()->json($this->searchResults);//*/
+    }
+
+    /***
+     * Getting the images related to the  search query
+     * @param $request
+     * @param array $country
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function searchImages($request, $country = ['CM'])
+    {
+       $this->fetching_images($request);
+       $this->recording_images($request);
+
 
 
         return response()->json($this->searchResults);//*/
@@ -252,21 +401,25 @@ class CrawlerController extends Controller
      * @param $strSearch
      * @param $country
      * @param $nb
+     * @param $video
      */
-    public function fetching($strSearch,$country,$nb)
+    public function fetching($strSearch,$country,$nb,$video = false)
     {
-        $client = new Client();
-         $client->setClient(new GuzzleClient($this->init()));
-        $client->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+        //$client = new Client();
+         //$client->setClient(new GuzzleClient($this->init()));
+        //$client->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
 
 
         foreach ($country as $pays) {
-            $url = $this->queryToUrl($strSearch, 0, $nb, $pays);
+
+            $url = $this->queryToUrl($strSearch, 0, $nb, $pays,$video);
+           // $url = $this->queryToUrl($strSearch, 0, $nb, $country[0],$video);
+
             //echo $strSearch;
             //$url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
             // Go to the symfony.com website
-            $crawler = $client->request('GET', $url);
-
+            $crawler = $this->launch_proxy($url);
+            echo $crawler->html();
             $this->resultHeader[$this->count] = [];
             $this->resultLink[$this->count] = [];
             $this->resultLink_text[$this->count] = [];
@@ -301,12 +454,128 @@ class CrawlerController extends Controller
     }
 
     /**
+     * Getting result of the search query
+     * @param $strSearch
+     */
+    public function fetching_images($strSearch)
+    {
+        //$client = new Client();
+        //$client->setClient(new GuzzleClient($this->init()));
+        //$client->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+
+                //echo 'get';
+            $url = $this->queryToUrl_min($strSearch);
+
+            $crawler = $this->launch_proxy($url);
+
+            echo $crawler->html();
+            $this->count = 0;
+            $this->resultHeader[$this->count] = [];
+            $this->resultLink[$this->count] = [];
+            $this->resultLink_text[$this->count] = [];
+            $this->resultBody[$this->count] = [];
+            //echo 'result';
+            $this->stringSearch = $strSearch;
+            //on récupère les entêtes des résultats
+           $crawler->filter( 'div#ires table tr')->each(function (Crawler $node, $i) {
+               // echo 'ok';
+               $results = $node->filter('td')->each(function (Crawler $node_i, $i) {
+                        return $node_i;
+                });
+               //print_r($results);
+                foreach ($results as $result)
+                {
+
+                   // $header = $result->filter('cite')->html();
+                   // $link = $result->filter('a')->attr('href');
+                    $preview = $result->text();
+
+                   // echo 'joy ';
+                    //echo $preview;
+                    //echo ' c\'est bon';
+                    if($this->contains_($preview,$this->stringSearch,true))
+                    {
+                        $header = $result->filter('cite')->html();
+                        $link = $result->filter('a img')->attr('src');
+                        array_push($this->resultHeader[$this->count], $header);
+                        array_push($this->resultLink[$this->count], $link);
+                        array_push($this->resultBody[$this->count], $preview);
+                        $link = $result->filter('a')->attr('href');
+                        $link = substr($link,strpos($link,'='));
+                        $link = substr($link,1,strpos($link,'&')-1);
+                        array_push($this->resultLink_text[$this->count], $link);
+                        //*/
+
+                       // echo 'header '.$header.'<br/>'. ' link: '.$link.'<br/>'.' preview'.$preview.'<br/> <br/>';
+                    }
+                }
+            });
+    }
+
+
+    public function launch_fetching_img($id)
+    {
+        print_r($this->resultLink_text[0]);
+        $this->fetching_img($this->resultLink_text[0][$id]);
+    }
+
+    /**
+     * @param $link
+     * @return array
+     */
+    public function fetching_img($search,$link)
+    {
+        echo  "inside <br/>";
+        $link = "https://helloworldpolytechnique.wordpress.com/tag/yoba-rostand/";
+        $search = "yoba rostand";
+        //$crawler_ = $this->launch_proxy($link);
+
+        $client_ = new Client();
+        $client_->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+        $crawler_ = $client_->request('GET', $link);
+
+        $preview = "helloworldpolytechniqu...
+YOBA Rostand | HELLO WORLD !!!
+220 × 126 – 12 Кб - jpg";
+
+
+        $images = $crawler_->filter( 'img')->each(function (Crawler $node_, $i) {
+
+           return $node_;
+
+            // echo $test .' <br/>';
+        });
+        $results = null;
+        $height =  substr($preview,strpos($preview,'×'));
+        $ext = substr($height,strpos($height,'-')+2);
+        $ext = trim($ext);
+        echo $ext;
+        $height =  substr($height,strpos($height,'×'),strpos($height,'–'));
+        $height =  substr($height,strpos($height,'×')+2,strpos($height,'–')-1);
+        $height = trim($height);
+        echo $height;
+        foreach ($images as $image)
+        {
+            if(($this->contains_($image->attr('alt'),$search,true))||
+                ($this->contains_($image->attr('src'),$ext,true,false)) && (strpos($image->attr('height'), $height) !== false) )
+            {
+
+                $results =  $image->attr('src');
+            }
+        }
+
+        return $results;
+    }
+
+    /**
      * Putting the search result inside an array of object
      * @param $request
      * @param $count
+     * @param $after
+     * @param $category
      * @return mixed
      */
-    public function recording($request, $count,$after)
+    public function recording($request, $count,$after,$category)
     {
         $counts = $count;
         $min = count($this->resultHeader[0]);
@@ -331,7 +600,7 @@ class CrawlerController extends Controller
                         'link' => $this->resultLink[$pas][$count],
                         'links' => $this->resultLink_text[$pas][$count],
                         'preview' => $this->resultBody[$pas][$count],
-                        'category' => 'all'
+                        'category' => $category
                     ]);
 
                     if(!$this->contains_searchResult($searchResult,$request))
@@ -357,12 +626,49 @@ class CrawlerController extends Controller
     /**
      * Putting the search result inside an array of object
      * @param $request
-     * @param $count
-     * @param $after
-     * @param $socials
      * @return mixed
      */
-    public function recording_social($request, $count,$after,$socials)
+    public function recording_images($request)
+    {
+        $min = count($this->resultHeader[0]);
+
+        if($min > 0)
+        {
+            // echo $min;
+            //$compt = 0;
+            for ($count = 0; $count < $min; $count++) {
+
+
+                    $searchResult = new Search_Result([
+                        'title' => $this->resultHeader[0][$count],
+                        'link' => $this->resultLink[0][$count],
+                        'links' => $this->resultLink_text[0][$count],
+                        'preview' => $this->resultBody[0][$count],
+                        'category' => 'images'
+                    ]);
+
+                    if(!$this->contains_searchResult($searchResult,$request))
+                    {
+                        array_push($this->searchResults, $searchResult);
+
+                       // $compt++;
+                    }
+
+                }
+
+        }
+       // return $counts;
+    }
+
+    /**
+     * Putting the search result inside an array of object
+     * @param $request
+     * @param $count
+     * @param $after
+     * @param $category
+     * @return mixed
+     */
+    public function recording_social($request, $count,$after,$category)
     {
         $counts = $count;
 
@@ -397,7 +703,7 @@ class CrawlerController extends Controller
                             'link' => $this->resultLink[$pas][$count],
                             'links' => $this->resultLink_text[$pas][$count],
                             'preview' => $this->resultBody[$pas][$count],
-                            'category' => 'all'
+                            'category' => $category
                         ]);
 
                         if (!$this->contains_searchResult($searchResult, $request)) {
@@ -437,66 +743,7 @@ class CrawlerController extends Controller
      */
     public function contains_searchResult($searchResult, $request)
     {
-        $terms = explode(" ",$request);
-        $test = true;
-        //print_r($terms);
-
-        //check if the header/title of the result contains the keywords of the search query
-        foreach ($terms as $term)
-            {
-                if($test)
-                {
-
-                    if(strpos(strtolower($searchResult->title) ,strtolower($term)) !== false)
-                    {
-                        $test = true;
-                    }
-                    else
-                    {
-                        $test = false;
-                    }
-                }
-            }
-            if(!$test)
-            {
-                //check if the link of the result contains the keywords of the search query
-                $test = true;
-                foreach ($terms as $term)
-                {
-                    if($test)
-                    {
-                        if(strpos(strtolower($searchResult->link) ,strtolower($term)) !== false)
-                        {
-                            $test = true;
-                        }
-                        else
-                        {
-                            $test = false;
-                        }
-                    }
-                }
-                if(!$test)
-                {
-                    //check if the body of the result contains the keywords of the search query
-                    $test = true;
-                    foreach ($terms as $term)
-                    {
-                        if($test)
-                        {
-                           // echo strtolower($searchResult->preview);
-                            if(strpos(strtolower($searchResult->preview) ,strtolower($term)) !== false)
-                            {
-                                $test = true;
-                               // echo "<br/>";
-                            }
-                            else
-                            {
-                                $test = false;
-                            }
-                        }
-                    }
-                }
-            }
+      $test = $this->contains_($searchResult,$request);
             if(!$test)
             {
                 return true;
@@ -520,6 +767,112 @@ class CrawlerController extends Controller
        // echo "rien";
 
         return false;
+    }
+
+    /**
+     * Check if a string is inside the request
+     * @param $searchResult
+     * @param $request
+     * @param $string
+     * @param $explode
+     * @return bool
+     */
+    public function contains_($searchResult,$request, $string = false,$explode = true)
+    {
+
+        if($explode)
+        {
+            $terms = explode(" ",$request);
+            $test = true;
+            //print_r($terms);
+
+            //check if the header/title of the result contains the keywords of the search query
+            foreach ($terms as $term)
+            {
+                if($test)
+                {
+                    if(!$string)
+                    {
+                        if(strpos(strtolower($searchResult->title) ,strtolower($term)) !== false)
+                        {
+                            $test = true;
+                        }
+                        else
+                        {
+                            $test = false;
+                        }
+                    }
+                    else
+                    {
+                        if(strpos(strtolower($searchResult) ,strtolower($term)) !== false)
+                        {
+                            $test = true;
+                        }
+                        else
+                        {
+                            $test = false;
+                        }
+                    }
+                }
+            }
+            if(!$string)
+            {
+                if(!$test)
+                {
+                    //check if the link of the result contains the keywords of the search query
+                    $test = true;
+                    foreach ($terms as $term)
+                    {
+                        if($test)
+                        {
+                            if(strpos(strtolower($searchResult->link) ,strtolower($term)) !== false)
+                            {
+                                $test = true;
+                            }
+                            else
+                            {
+                                $test = false;
+                            }
+                        }
+                    }
+                    if(!$test)
+                    {
+                        //check if the body of the result contains the keywords of the search query
+                        $test = true;
+                        foreach ($terms as $term)
+                        {
+                            if($test)
+                            {
+                                // echo strtolower($searchResult->preview);
+                                if(strpos(strtolower($searchResult->preview) ,strtolower($term)) !== false)
+                                {
+                                    $test = true;
+                                    // echo "<br/>";
+                                }
+                                else
+                                {
+                                    $test = false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            if(strpos(strtolower($searchResult) ,strtolower($request)) !== false)
+            {
+                $test = true;
+            }
+            else
+            {
+                $test = false;
+            }
+        }
+
+
+        return $test;
+
     }
 
     /**
@@ -669,7 +1022,7 @@ class CrawlerController extends Controller
             $this->fetching($strSearch." ".$social,$country,$nb);
 
         }//*/
-         $counts = $this->recording_social($request,$counts,false,$socials);
+         $counts = $this->recording_social($request,$counts,false,"social");
        // echo $counts;
 
         //
@@ -681,7 +1034,7 @@ class CrawlerController extends Controller
      * @param array $country
      * @param int $index
      */
-    public function searchDocument($request,$country = ['CM,US,FR'],$index = 1)
+    public function searchDocument($request,$country = ['CM','US','FR'],$index = 1)
     {
         $documents = [];
         switch ($index)
@@ -712,16 +1065,40 @@ class CrawlerController extends Controller
             //$counts = $this->recording($request,$counts,false);
         }
 
-        /*  $this->count = 0;
-          $strSearch = $request;
 
-          foreach ($socials as $social) {
+        $this->recording_social($request,$counts,false,"document");
+        // echo $counts;
 
-              //echo $strSearch;
-              $this->fetching($strSearch." ".$social,$country,$nb);
+        //
+    }
 
-          }//*/
-        $counts = $this->recording_social($request,$counts,false,$documents);
+
+
+    /**
+     * search for some traces in files
+     * @param $request
+     * @param array $country
+     */
+    public function searchVideo($request,$country = ['CM','US','FR'])
+    {
+
+
+        $counts = 0;
+        //$strSearch = '"'.$request.'"';
+        $strSearch = $request;
+        $nb = 20;
+        $this->count = 0;
+
+
+       // foreach ($country as $pays) {
+            //echo $strSearch;
+           // $this->fetching($strSearch,$pays,$nb,true);
+            $this->fetching($strSearch,$country,$nb,true);
+            //$counts = $this->recording($request,$counts,false);
+     //   }
+
+
+        $this->recording($request,$counts,false,"video");
         // echo $counts;
 
         //
@@ -842,19 +1219,65 @@ class CrawlerController extends Controller
 
     }
 
-    function queryToUrl($query, $start=null, $perPage=100, $country="US") {
-        return "http://www.google.com/search?" . http_build_query(array(
-            // Query
-            //"q"     => urlencode($query),
-            "q"     => $query,
-            // Country (geolocation presumably)
-            "gl"    => $country,
-            //"siteSearch" => "twitter",
-            // Start offset
-            "start" => $start,
-            // Number of result to a page
-            "num"   => $perPage
-        ), true);
+    /**
+ * Tansform the given parameters into a suitable query
+ * @param $query
+ * @param null $start
+ * @param int $perPage
+ * @param string $country
+ * @return string
+ */
+    function queryToUrl($query, $start=null, $perPage=100, $country="US",$video = false) {
+
+        if (!$video)
+        {
+            return "http://www.google.com/search?" . http_build_query(array(
+                    // Query
+                    //"q"     => urlencode($query),
+                    "q"     => $query,
+                    // Country (geolocation presumably)
+                    "gl"    => $country,
+                    //"siteSearch" => "twitter",
+                    // Start offset
+                    "start" => $start,
+                    // Number of result to a page
+                    "num"   => $perPage
+                ), true);
+        }
+        else{
+            $result = "https://www.google.com/search?" . http_build_query(array(
+                    // Query
+                    //"q"     => urlencode($query),
+                    "q"     => $query,
+                    // Country (geolocation presumably)
+                    "tbm" => "vid",
+                    "gl"    => $country,
+                    //"siteSearch" => "twitter",
+                    // Number of result to a page
+                    "num"   => $perPage
+                ), true);
+            echo $result;
+            return $result;
+        }
+    }
+
+
+    /**
+     * Tansform the given parameters into a suitable query
+     * @param $query
+     * @param string $country
+     * @return string
+     */
+    function queryToUrl_min($query, $country="US") {
+            return "http://www.google.com/search?" . http_build_query(array(
+                    // Query
+                    //"q"     => urlencode($query),
+                    "q"     => $query,
+                    "tbm" => "isch",
+                    // Country (geolocation presumably)
+                    "gl"    => $country,
+                ), true);
+
     }
 
     function queryToUrlBing($query, $start=null, $perPage=100, $country="") {

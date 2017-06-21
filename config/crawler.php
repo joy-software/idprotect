@@ -28,7 +28,7 @@ return[
    | In second. 0 equals unlimited time
    |
    */
-    'timeoutConnect' => '10',
+    'timeoutConnect' => '7',
 
 
 
@@ -116,37 +116,7 @@ return[
    |
    */
     'proxy' => [
-        ['protocol' => 'https', 'ip' => '200.29.191.149', 'port' => '3128'],
-        ['protocol' => 'https', 'ip' => '89.40.112.53', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '89.40.114.217', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '87.228.42.239', 'port' => '53281'],
-        ['protocol' => 'https', 'ip' => '185.35.67.231', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.242.234', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '185.35.64.230', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.243.53', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.241.196', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.241.167', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.240.167', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '89.40.114.118', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.236.106', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.234.164', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.239.165', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.238.166', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.242.202', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.241.226', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.240.167', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '89.36.213.17', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.241.221', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.240.210', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '185.35.67.194', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.241.73', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.239.179', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '89.38.148.15', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '94.177.242.234', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '89.36.214.169', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '89.38.148.75', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '89.38.151.235', 'port' => '1189'],
-        ['protocol' => 'https', 'ip' => '173.199.70.59', 'port' => '1189'],
+        ['protocol' => 'socks5', 'ip' => '127.0.0.1', 'port' => '1050'],
     ],
 
     /**

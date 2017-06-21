@@ -56,6 +56,8 @@ Route::group(['prefix' => $language], function () {
 
 Route::get('/view/{requete}', 'CrawlerController@view');
 Route::get('/search/{requete}', 'CrawlerController@search');
+Route::get('/search/img/{search}/{link?}', 'CrawlerController@fetching_img')
+    ->where('link', '(.*)');
 //Route::get('/home/{locale}', 'HomeController@transIndex');
 /*
 Route::get('/search/{requete}', 'CrawlerController@search');

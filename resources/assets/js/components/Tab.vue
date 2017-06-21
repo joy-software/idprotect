@@ -11,7 +11,8 @@
                 <h1><slot name="before"></slot><strong v-text="number"></strong> <slot name="after"></slot></h1>
             </template>
             <template v-for="resul in results">
-                <result  :title="resul.title" :preview="resul.preview" :link="resul.links" style="margin-bottom: 15px">
+                <result  :title="resul.title" :preview="resul.preview" :link="resul.links"
+                         :type="resul.category" style="margin-bottom: 15px">
                 </result>
             </template>
            <alert v-if="emptyResult && search" @close="CloseNotif">
