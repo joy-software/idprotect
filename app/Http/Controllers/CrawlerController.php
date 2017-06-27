@@ -25,8 +25,14 @@ class CrawlerController extends Controller
     public $resultLink = [];
     public $resultLink_text = [];
     public $resultBody = [];
+    public $resultHeaderV = [];
+    public $resultLinkV = [];
+    public $resultLink_textV = [];
+    public $resultVideo = [];
+    public $resultBodyV = [];
     public $searchResults = [];
     public $count = 0;
+    public $countV = 0;
     public $proxy = null;
     public $stringSearch = "";
 
@@ -189,9 +195,10 @@ class CrawlerController extends Controller
     /**
      * The initialisation of our crawler
      * @param $url
+     * @param $image
      * @return null|Crawler
      */
-    public function launch_proxy($url)
+    public function launch_proxy($url,$image = false)
     {
         $proxys = $this->proxy;
         $timeout = Config::get('crawler.timeout');
@@ -205,7 +212,7 @@ class CrawlerController extends Controller
                 CURLOPT_TIMEOUT => $timeout,
                 CURLOPT_CONNECTTIMEOUT => $timeoutConnect
             ],
-
+            'cookies' => true,
             'verify' => Config::get('crawler.pathHttpsKeyFile'),
             'handler' => $stack,
             'proxy'=>"socks5://127.0.0.1:9050",
@@ -237,7 +244,15 @@ class CrawlerController extends Controller
                     $client_->setClient(new GuzzleClient($config));
                     $client_->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
                    // $url  = 'http://freeproxylists.net/fr/?c=&pt=&pr=HTTPS&a%5B%5D=0&a%5B%5D=1&a%5B%5D=2&u=90';
-                    $crawler_ = $client_->request('GET', $url);
+                    if(!$image)
+                    {
+                        $crawler_ = $client_->request('GET', $url);
+                    }
+                    else
+                    {
+                        $crawler_[0] = $client_->request('GET', $url);
+                        $crawler_[1] = $client_;
+                    }
 
                 } catch (ConnectException $e) {
                     //Catch the guzzle connection errors over here.These errors are something
@@ -331,13 +346,9 @@ class CrawlerController extends Controller
 
             return Config::get('crawler.proxy');
         }
-        /*$url = 'http://freeproxylists.net/fr/?c=&pt=&pr=HTTPS&a%5B%5D=0&a%5B%5D=1&a%5B%5D=2&u=90';
+        //$url = 'http://freeproxylists.net/fr/?c=&pt=&pr=HTTPS&a%5B%5D=0&a%5B%5D=1&a%5B%5D=2&u=90';
 
-        $client_ = new Client();
-        //$client_->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
-        $client_->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36');
 
-        $crawler_ = $client_->request('GET', $url);*/
 
     }
 
@@ -359,23 +370,25 @@ class CrawlerController extends Controller
         //echo $strSearch;
         $this->fetching($strSearch,$country,$nb);
         $counts = $this->recording($request,$counts,false);
+//*/
 
-
+        $counts = 0;
+        $nb = 40;
         $this->count = 0;
-        $strSearch = $request;
-        $this->fetching($strSearch,$country,$nb);
+        $this->fetching($request,$nb);
         $this->recording($request,$counts,true);
 //*/
 
-        //$this->searchSocial($request,$country);
+       // $this->searchSocial($request);
         //$this->searchSocial($request,$country,2);
        // $this->searchSocial($request,$country,3);
         //$this->searchSocial($request,$country,4);
-       // $this->searchDocument($request,$country);
+        //$this->searchDocument($request);
+        //$this->searchDocument($request,$country);
         //$this->fetching_images($request);
-       // $this->recording_images($request);
+        //$this->recording_images($request);
         //print_r($this->fetching_img($this->resultLink_text[0][0]));
-        $this->searchVideo($request);
+        //$this->searchVideo($request);
 
         return response()->json($this->searchResults);//*/
     }
@@ -383,10 +396,9 @@ class CrawlerController extends Controller
     /***
      * Getting the images related to the  search query
      * @param $request
-     * @param array $country
      * @return \Illuminate\Http\JsonResponse
      */
-    public function searchImages($request, $country = ['CM'])
+    public function searchImages($request)
     {
        $this->fetching_images($request);
        $this->recording_images($request);
@@ -397,17 +409,23 @@ class CrawlerController extends Controller
     }
 
     /**
-     * Getting result of the search query
+     *  Getting result of the search query
      * @param $strSearch
-     * @param $country
      * @param $nb
-     * @param $video
+     * @param array $country
+     * @param bool $video
      */
-    public function fetching($strSearch,$country,$nb,$video = false)
+    public function fetching($strSearch,$nb,$country = ['CM'],$video = false)
     {
-        //$client = new Client();
-         //$client->setClient(new GuzzleClient($this->init()));
-        //$client->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+
+        $client = new Client();
+       // $client->setClient(new GuzzleClient($config));
+        $client->setClient(new GuzzleClient(['cookies' => true]));
+        $client->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+        //AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063');
+        $client->setHeader('Accept', '*/*');
+        $client->setHeader('Accept-Encoding', 'gzip, deflate, br');
+        $client->setHeader('Connection:', 'Keep-Alive');
 
 
         foreach ($country as $pays) {
@@ -418,12 +436,20 @@ class CrawlerController extends Controller
             //echo $strSearch;
             //$url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
             // Go to the symfony.com website
-            $crawler = $this->launch_proxy($url);
-            echo $crawler->html();
+            $crawler = $client->request('GET', $url);;
+            //echo $crawler->html();
             $this->resultHeader[$this->count] = [];
             $this->resultLink[$this->count] = [];
             $this->resultLink_text[$this->count] = [];
             $this->resultBody[$this->count] = [];
+           if($video)
+           {
+               $this->resultHeaderV[$this->countV] = [];
+               $this->resultLinkV[$this->countV] = [];
+               $this->resultLink_textV[$this->countV] = [];
+               $this->resultVideo[$this->countV] = [];
+               $this->resultBodyV[$this->countV] = [];
+           }
             //on récupère les entêtes des résultats
             $crawler->filter('td div#center_col div.g')->each(function (Crawler $node, $i) {
 
@@ -432,6 +458,8 @@ class CrawlerController extends Controller
                     $header = $header->html();
                     //print("<br/>".$header);
                     if (strpos($header, 'mages for') == false) {
+                        //echo'<br/> '.$this->count.'<br/>';
+                        //print_r($this->resultHeader);
                         array_push($this->resultHeader[$this->count], $header);
                         $link = $node->filter('div cite')->html();
 
@@ -446,11 +474,53 @@ class CrawlerController extends Controller
                         }
                     }
                 }
-            });
-            $this->count++;
 
+            });
+            if($video)
+            {
+                $crawler->filter('td div#center_col div.g.videobox')->each(function (Crawler $node, $i) {
+                    $video = $node->filter('td img')->attr('src');
+                    array_push($this->resultVideo[$this->countV], $video);
+                    $header = $node->filter('td h3 a');
+                    if ($header->count() > 0) {
+                        $link = $header->attr('href');
+                        $link = substr($link,strpos($link,'='));
+                        $link = substr($link,1,strpos($link,'&')-1);
+                        array_push($this->resultLink_textV[$this->countV], $link);
+
+                        $header = $header->html();
+                        //print("<br/>".$header);
+                        if (strpos($header, 'mages for') == false) {
+                            array_push($this->resultHeaderV[$this->countV], $header);
+                            $link = $node->filter('div cite')->html();
+
+                            array_push($this->resultLinkV[$this->countV], $link);
+
+
+                            if (strpos($link, 'books.google.com') == false) {
+                                array_push($this->resultBodyV[$this->countV], $node->filter('div span.st')->html());
+                            } else {
+                                array_push($this->resultBodyV[$this->countV], $node->filter('div.s')->html());
+                            }
+                        }
+                    }
+
+                });
+
+            }
+            $this->count++;
+            if($video)
+            {
+                $this->countV++;
+            }
+            $min =[5,8,9,10,12,7];
+            sleep(rand(0,1)*count($min));
             //print count($searchResults);
         }
+         //$url  = 'http://freeproxylists.net/fr/?c=&pt=&pr=HTTPS&a%5B%5D=0&a%5B%5D=1&a%5B%5D=2&u=90';
+        //$crawler = $client->request('GET', $url);
+       // echo $crawler->html();
+
     }
 
     /**
@@ -466,9 +536,9 @@ class CrawlerController extends Controller
                 //echo 'get';
             $url = $this->queryToUrl_min($strSearch);
 
-            $crawler = $this->launch_proxy($url);
+            $crawler = $this->launch_proxy($url,true);
 
-            echo $crawler->html();
+            //echo $crawler[0]->html();
             $this->count = 0;
             $this->resultHeader[$this->count] = [];
             $this->resultLink[$this->count] = [];
@@ -477,66 +547,86 @@ class CrawlerController extends Controller
             //echo 'result';
             $this->stringSearch = $strSearch;
             //on récupère les entêtes des résultats
-           $crawler->filter( 'div#ires table tr')->each(function (Crawler $node, $i) {
+        $results = $crawler[0]->filter( 'div#ires table tr td')->each(function (Crawler $node, $i) {
                // echo 'ok';
-               $results = $node->filter('td')->each(function (Crawler $node_i, $i) {
-                        return $node_i;
-                });
+                        return $node;
+        });
                //print_r($results);
-                foreach ($results as $result)
+        foreach ($results as $result)
+        {
+
+           // $header = $result->filter('cite')->html();
+           // $link = $result->filter('a')->attr('href');
+            $preview = $result->text();
+
+           // echo 'joy ';
+            //echo $preview;
+            //echo ' c\'est bon';
+            if($this->contains_($preview,$this->stringSearch,true))
+            {
+                $header = $result->filter('cite')->html();
+                $link = $result->filter('a img')->attr('src');
+                array_push($this->resultHeader[$this->count], $header);
+                array_push($this->resultLink[$this->count], $link);
+                array_push($this->resultBody[$this->count], $preview);
+                $link = $result->filter('a')->attr('href');
+                $link = substr($link,strpos($link,'='));
+                $link = substr($link,1,strpos($link,'&')-1);
+                array_push($this->resultLink_text[$this->count], $link);
+/*
+                $crawler_ = $crawler[1]->request('GET', $link);
+                $images = $crawler_->filter( 'img')->each(function (Crawler $node_, $i) {
+
+                    return $node_;
+
+                    // echo $test .' <br/>';
+                });
+
+                $height =  substr($preview,strpos($preview,'×'));
+                $ext = substr($height,strpos($height,'-')+2);
+                $ext = trim($ext);
+                $height =  substr($height,strpos($height,'×'),strpos($height,'–'));
+                $height =  substr($height,strpos($height,'×')+2,strpos($height,'–')-1);
+                $height = trim($height);
+                foreach ($images as $image)
                 {
-
-                   // $header = $result->filter('cite')->html();
-                   // $link = $result->filter('a')->attr('href');
-                    $preview = $result->text();
-
-                   // echo 'joy ';
-                    //echo $preview;
-                    //echo ' c\'est bon';
-                    if($this->contains_($preview,$this->stringSearch,true))
+                    if(($this->contains_($image->attr('alt'),$strSearch,true))||
+                        ($this->contains_($image->attr('src'),$ext,true,false)) && (strpos($image->attr('height'), $height) !== false) )
                     {
-                        $header = $result->filter('cite')->html();
-                        $link = $result->filter('a img')->attr('src');
-                        array_push($this->resultHeader[$this->count], $header);
-                        array_push($this->resultLink[$this->count], $link);
-                        array_push($this->resultBody[$this->count], $preview);
-                        $link = $result->filter('a')->attr('href');
-                        $link = substr($link,strpos($link,'='));
-                        $link = substr($link,1,strpos($link,'&')-1);
-                        array_push($this->resultLink_text[$this->count], $link);
-                        //*/
 
-                       // echo 'header '.$header.'<br/>'. ' link: '.$link.'<br/>'.' preview'.$preview.'<br/> <br/>';
+                        $link =  $image->attr('src');
+                        echo $link ."<br/>";
+                        array_push($this->resultLink_text[$this->count], $link);
                     }
                 }
-            });
+                //*/
+
+               // echo 'header '.$header.'<br/>'. ' link: '.$link.'<br/>'.' preview'.$preview.'<br/> <br/>';
+            }
+//            sleep(1);
+        }
+
     }
 
-
-    public function launch_fetching_img($id)
-    {
-        print_r($this->resultLink_text[0]);
-        $this->fetching_img($this->resultLink_text[0][$id]);
-    }
 
     /**
+     * @param $search
      * @param $link
-     * @return array
+     * @param $preview
+     * @return null
      */
-    public function fetching_img($search,$link)
+    public function fetching_img($search,$link,$preview)
     {
-        echo  "inside <br/>";
-        $link = "https://helloworldpolytechnique.wordpress.com/tag/yoba-rostand/";
-        $search = "yoba rostand";
+
+        //$link = "https://helloworldpolytechnique.wordpress.com/tag/yoba-rostand/";
+        //$search = "yoba rostand";
         //$crawler_ = $this->launch_proxy($link);
 
         $client_ = new Client();
         $client_->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
         $crawler_ = $client_->request('GET', $link);
 
-        $preview = "helloworldpolytechniqu...
-YOBA Rostand | HELLO WORLD !!!
-220 × 126 – 12 Кб - jpg";
+       // $preview = "helloworldpolytechniqu...YOBA Rostand | HELLO WORLD !!! 220 × 126 – 12 Кб - jpg";
 
 
         $images = $crawler_->filter( 'img')->each(function (Crawler $node_, $i) {
@@ -549,18 +639,18 @@ YOBA Rostand | HELLO WORLD !!!
         $height =  substr($preview,strpos($preview,'×'));
         $ext = substr($height,strpos($height,'-')+2);
         $ext = trim($ext);
-        echo $ext;
+
         $height =  substr($height,strpos($height,'×'),strpos($height,'–'));
         $height =  substr($height,strpos($height,'×')+2,strpos($height,'–')-1);
         $height = trim($height);
-        echo $height;
+
         foreach ($images as $image)
         {
             if(($this->contains_($image->attr('alt'),$search,true))||
                 ($this->contains_($image->attr('src'),$ext,true,false)) && (strpos($image->attr('height'), $height) !== false) )
             {
 
-                $results =  $image->attr('src');
+                return  $image->attr('src');
             }
         }
 
@@ -573,53 +663,151 @@ YOBA Rostand | HELLO WORLD !!!
      * @param $count
      * @param $after
      * @param $category
+     * @param $video
      * @return mixed
      */
-    public function recording($request, $count,$after,$category)
+    public function recording($request, $count,$after,$category = "all",$video = false)
     {
-        $counts = $count;
-        $min = count($this->resultHeader[0]);
-        foreach ($this->resultHeader as $header)
+        if($video)
         {
-            if(count($header) < $min)
+
+            $counts = $count;
+            $min = count($this->resultHeaderV[0]);
+            foreach ($this->resultHeaderV as $header)
             {
-                $min = count($header);
-            }
-        }
-
-        if($min > 0)
-        {
-            // echo $min;
-            $compt = 0;
-            for ($count = 0; $count < $min; $count++) {
-
-                for ($pas = 0; $pas < count($this->resultHeader); $pas++)
+                if(count($header) < $min)
                 {
-                    $searchResult = new Search_Result([
-                        'title' => $this->resultHeader[$pas][$count],
-                        'link' => $this->resultLink[$pas][$count],
-                        'links' => $this->resultLink_text[$pas][$count],
-                        'preview' => $this->resultBody[$pas][$count],
-                        'category' => $category
-                    ]);
+                    $min = count($header);
+                }
+            }
 
-                    if(!$this->contains_searchResult($searchResult,$request))
+            if($min > 0)
+            {
+                // echo $min;
+                $compt = 0;
+                for ($count = 0; $count < $min; $count++) {
+
+                    for ($pas = 0; $pas < count($this->resultHeaderV); $pas++)
                     {
-                        if($after)
-                        {
-                            array_splice( $this->searchResults, 2*$compt, 0, array($searchResult) );
-                        }
-                        else
-                        {
-                            array_push($this->searchResults, $searchResult);
-                        }
-                        $compt++;
-                        $counts++;
-                    }
+                        $searchResult = new Search_Result([
+                            'title' => $this->resultHeaderV[$pas][$count],
+                            'link' => $this->resultLinkV[$pas][$count],
+                            'links' => $this->resultLink_textV[$pas][$count],
+                            'videoLink' => $this->resultVideo[$pas][$count],
+                            'preview' => $this->resultBodyV[$pas][$count],
+                            'category' => $category
+                        ]);
 
+                        if(!$this->contains_searchResult($searchResult,$request))
+                        {
+                            if($after)
+                            {
+                                array_splice( $this->searchResults, 2*$compt, 0, array($searchResult) );
+                            }
+                            else
+                            {
+                                array_push($this->searchResults, $searchResult);
+                            }
+                            $compt++;
+                            $counts++;
+                        }
+
+                    }
+                }
+            }
+
+            $counts = $count;
+            $min = count($this->resultHeader[0]);
+            foreach ($this->resultHeader as $header)
+            {
+                if(count($header) < $min)
+                {
+                    $min = count($header);
+                }
+            }
+
+            if($min > 0)
+            {
+                // echo $min;
+                $compt = 0;
+                for ($count = 0; $count < $min; $count++) {
+
+                    for ($pas = 0; $pas < count($this->resultHeader); $pas++)
+                    {
+                        $searchResult = new Search_Result([
+                            'title' => $this->resultHeader[$pas][$count],
+                            'link' => $this->resultLink[$pas][$count],
+                            'links' => $this->resultLink_text[$pas][$count],
+                            'videoLink' => 'empty',
+                            'preview' => $this->resultBody[$pas][$count],
+                            'category' => $category
+                        ]);
+
+                        if(!$this->contains_searchResult($searchResult,$request))
+                        {
+                            if($after)
+                            {
+                                array_splice( $this->searchResults, 2*$compt, 0, array($searchResult) );
+                            }
+                            else
+                            {
+                                array_push($this->searchResults, $searchResult);
+                            }
+                            $compt++;
+                            $counts++;
+                        }
+
+                    }
                 }
             }
         }
+        else{
+
+            $counts = $count;
+            $min = count($this->resultHeader[0]);
+            foreach ($this->resultHeader as $header)
+            {
+                if(count($header) < $min)
+                {
+                    $min = count($header);
+                }
+            }
+
+            if($min > 0)
+            {
+                // echo $min;
+                $compt = 0;
+                for ($count = 0; $count < $min; $count++) {
+
+                    for ($pas = 0; $pas < count($this->resultHeader); $pas++)
+                    {
+                        $searchResult = new Search_Result([
+                            'title' => $this->resultHeader[$pas][$count],
+                            'link' => $this->resultLink[$pas][$count],
+                            'links' => $this->resultLink_text[$pas][$count],
+                            'preview' => $this->resultBody[$pas][$count],
+                            'category' => $category
+                        ]);
+
+                        if(!$this->contains_searchResult($searchResult,$request))
+                        {
+                            if($after)
+                            {
+                                array_splice( $this->searchResults, 2*$compt, 0, array($searchResult) );
+                            }
+                            else
+                            {
+                                array_push($this->searchResults, $searchResult);
+                            }
+                            $compt++;
+                            $counts++;
+                        }
+
+                    }
+                }
+            }
+        }
+
         return $counts;
     }
 
@@ -982,10 +1170,11 @@ YOBA Rostand | HELLO WORLD !!!
     /**
      * search for some traces on social media
      * @param $request
-     * @param array $country
      * @param int $index
+     * @param array $country
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function searchSocial($request,$country = ['CM'],$index = 1)
+    public function searchSocial($request,$index = 1,$country = ['CM'])
     {
         $socials = [];
         switch ($index)
@@ -1009,8 +1198,9 @@ YOBA Rostand | HELLO WORLD !!!
 
         foreach ($socials as $social) {
             //echo $strSearch;
-            $this->fetching($strSearch." site:".$social,$country,$nb);
+            $this->fetching($strSearch." site:".$social,$nb,$country);
             //$counts = $this->recording($request,$counts,false);
+            sleep(1);
         }
 
       /*  $this->count = 0;
@@ -1025,16 +1215,17 @@ YOBA Rostand | HELLO WORLD !!!
          $counts = $this->recording_social($request,$counts,false,"social");
        // echo $counts;
 
-        //
+        return response()->json($this->searchResults);
     }
 
     /**
      * search for some traces in files
      * @param $request
-     * @param array $country
      * @param int $index
+     * @param array $country
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function searchDocument($request,$country = ['CM','US','FR'],$index = 1)
+    public function searchDocument($request,$index = 1,$country = ['CM'])
     {
         $documents = [];
         switch ($index)
@@ -1061,7 +1252,7 @@ YOBA Rostand | HELLO WORLD !!!
 
         foreach ($documents as $document) {
             //echo $strSearch;
-            $this->fetching($strSearch." filetype:".$document,$country,$nb);
+            $this->fetching($strSearch." filetype:".$document,$nb,$country);
             //$counts = $this->recording($request,$counts,false);
         }
 
@@ -1070,6 +1261,7 @@ YOBA Rostand | HELLO WORLD !!!
         // echo $counts;
 
         //
+        return response()->json($this->searchResults);
     }
 
 
@@ -1088,20 +1280,21 @@ YOBA Rostand | HELLO WORLD !!!
         $strSearch = $request;
         $nb = 20;
         $this->count = 0;
+        $this->countV = 0;
 
 
        // foreach ($country as $pays) {
             //echo $strSearch;
            // $this->fetching($strSearch,$pays,$nb,true);
-            $this->fetching($strSearch,$country,$nb,true);
+            $this->fetching($strSearch,$nb,$country,true);
             //$counts = $this->recording($request,$counts,false);
      //   }
 
 
-        $this->recording($request,$counts,false,"video");
+        $this->recording($request,$counts,false,"video",true);
         // echo $counts;
 
-        //
+        return response()->json($this->searchResults);
     }
 
     public function searchBing($requete)
@@ -1245,7 +1438,7 @@ YOBA Rostand | HELLO WORLD !!!
                 ), true);
         }
         else{
-            $result = "https://www.google.com/search?" . http_build_query(array(
+            $result = "http://www.google.com/search?" . http_build_query(array(
                     // Query
                     //"q"     => urlencode($query),
                     "q"     => $query,
@@ -1256,7 +1449,6 @@ YOBA Rostand | HELLO WORLD !!!
                     // Number of result to a page
                     "num"   => $perPage
                 ), true);
-            echo $result;
             return $result;
         }
     }

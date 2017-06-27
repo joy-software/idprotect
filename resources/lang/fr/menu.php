@@ -29,6 +29,6 @@ return [
     'nav_search_result_document' => 'Documents',
     'nav_search_result_site' => 'Sites Web',
     'nav_search_result_image' => 'Images',
-    'nav_search_result_video' => 'Vidéos',
+    'nav_search_result_video' => 'Videos',
 
 ];

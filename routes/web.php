@@ -51,11 +51,17 @@ Route::group(['prefix' => $language], function () {
         'as'      => 'search',
         'uses'    => 'SearchController@store']);
 
+    Route::get('/search/{request}', 'CrawlerController@search');
+    Route::get('/searchS/{request}/{index}', 'CrawlerController@searchSocial');
+    Route::get('/searchD/{request}/{index}', 'CrawlerController@searchDocument');
+    Route::get('/searchV/{request}', 'CrawlerController@searchVideo');
+    Route::get('/searchI/{request}', 'CrawlerController@searchImages');
+
+
 });
 
 
-Route::get('/view/{requete}', 'CrawlerController@view');
-Route::get('/search/{requete}', 'CrawlerController@search');
+Route::get('/view/{request}', 'CrawlerController@view');
 Route::get('/search/img/{search}/{link?}', 'CrawlerController@fetching_img')
     ->where('link', '(.*)');
 //Route::get('/home/{locale}', 'HomeController@transIndex');

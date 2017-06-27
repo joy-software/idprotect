@@ -16,24 +16,29 @@
 </--div-->
 
 <tabs>
-    <tab name="@lang('menu.nav_search_result_all')" :selected="true">
+    <tab name="@lang('menu.nav_search_result_all')" icon="fa-university" :selected="true">
         <template slot="before">@lang('messages.beforeResult')</template>
         <template slot="after">@lang('messages.afterResult')</template>
         <template slot="emptyResultMessage">@lang('messages.emptyResultMessage')</template>
     </tab>
-    <tab name="@lang('menu.nav_search_result_social')">
+    <tab name="@lang('menu.nav_search_result_social')" icon="fa-comments">
+        <template slot="before">@lang('messages.beforeResult')</template>
+        <template slot="after">@lang('messages.afterResult')</template>
         <template slot="emptyResultMessage">@lang('messages.emptyResultMessage')</template>
     </tab>
-    <tab name="@lang('menu.nav_search_result_document')">
+    <tab name="@lang('menu.nav_search_result_document')" icon="fa-file">
+        <template slot="before">@lang('messages.beforeResult')</template>
+        <template slot="after">@lang('messages.afterResult')</template>
         <template slot="emptyResultMessage">@lang('messages.emptyResultMessage')</template>
     </tab>
-    <tab name="@lang('menu.nav_search_result_site')">
+    <tab name="@lang('menu.nav_search_result_image')" icon="fa-photo">
+        <template slot="before">@lang('messages.beforeResult')</template>
+        <template slot="after">@lang('messages.afterResult')</template>
         <template slot="emptyResultMessage">@lang('messages.emptyResultMessage')</template>
     </tab>
-    <tab name="@lang('menu.nav_search_result_image')">
-        <template slot="emptyResultMessage">@lang('messages.emptyResultMessage')</template>
-    </tab>
-    <tab name="@lang('menu.nav_search_result_video')">
+    <tab name="@lang('menu.nav_search_result_video')" icon="fa-video-camera">
+        <template slot="before">@lang('messages.beforeResult')</template>
+        <template slot="after">@lang('messages.afterResult')</template>
         <template slot="emptyResultMessage">@lang('messages.emptyResultMessage')</template>
     </tab>
 </tabs>

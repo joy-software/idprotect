@@ -1,27 +1,47 @@
 <template>
     <div class="card">
-        <div class="card-content" >
+        <div class="card-content" v-if="type !== 'images'">
             <div class="media">
-                <div class="media-left " v-if="type === 'video'">
-                    <figure class="image is-48x48">
-                        <img src="http://bulma.io/images/placeholders/96x96.png" alt="Image">
+                <div class="media-left " v-if="(type === 'video') && (video !== 'empty')">
+                    <figure class="image">
+                        <img :src="video" alt="Aperçu">
                     </figure>
                 </div>
-                <template v-if="type === 'images'">
-                    <figure class="image is-128x128">
-                        <img :src="link">
-                    </figure>
-                    <p class="title is-4" v-html="title"></p>
-                </template>
-                <div class="media-content" v-else>
-                    <p class="title is-4" v-html="title"></p>
+                <div class="media-content">
+                    <p class="title is-5" v-html="title"></p>
                     <p class="subtitle is-6" ><a v-html="link" :href="link"></a></p>
                 </div>
+                <nav class="level is-mobile">
+                    <div class="has-text-centered">
+                        <button class="level-item" v-show="!isLove" style="margin-bottom: 5px" @click.prevent="submitLove">
+                            <span class="icon is-small"><i class="fa fa-heart"></i></span>
+                        </button>
+                        <a class="level-item" v-show="isLove">
+                            <span class="icon is-small"><i class="fa fa-trash"></i></span>
+                        </a>
+                        <button class="level-item" v-show="!isTrash" style="margin-bottom: 5px" @click.prevent="submitTrash">
+                            <span class="icon is-small"><i class="fa fa-heart"></i></span>
+                        </button>
+                        <a class="level-item" v-show="isLove">
+                            <span class="icon is-small"><i class="fa fa-trash"></i></span>
+                        </a>
+                        <!--a class="level-item">
+                            <span class="icon is-small"><i class="fa fa-legal"></i></span>
+                        </a-->
+                    </div>
+                </nav>
             </div>
 
-            <div class="content" v-html="preview" v-if="type !== 'images'">
+            <div class="content subtitle is-6" v-html="preview">
             </div>
         </div>
+        <template v-if="type === 'images'">
+            <figure class="image">
+                <img :src="links">
+            </figure>
+            <p class="title is-6" v-html="title"></p>
+        </template>
+
     </div>
 </template>
 
@@ -32,7 +52,9 @@
             title: {required: true},
             preview: {required: true},
             link: {required: true},
-            type: {required: true}
+            type: {required: true},
+            id: {required: true},
+            video: {required: false}
         },
 
         data(){
@@ -41,6 +63,9 @@
                 //title: this.title,
                 //preview: this.preview,
                 //link: this.link
+                form: new Form({idResult: this.id}),
+                isLove: false,
+                isTrash: false,
             }
         },
 
@@ -59,7 +84,12 @@
         },
 
         methods:{
-
+            submitLove(){
+                this.isLove = true;
+            },
+            submitTrash(){
+                this.isTrash = true;
+            }
         }
     }
 </script>
