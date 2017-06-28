@@ -394,6 +394,28 @@ class CrawlerController extends Controller
     }
 
     /***
+     * Getting the result over a search query
+     * @param $request
+     * @param array $country
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function searchII($request, $country = ['CM','FR','US'])
+    {
+
+
+        $counts = 0;
+        $nb = 40;
+        $this->count = 0;
+        $search = '"'.$request.'"';
+        $this->fetching($search,$nb,false,false,true);
+        $this->recording($request,$counts,true);
+//*/
+
+
+        return response()->json($this->searchResults);//*/
+    }
+
+    /***
      * Getting the images related to the  search query
      * @param $request
      * @return \Illuminate\Http\JsonResponse
@@ -415,7 +437,7 @@ class CrawlerController extends Controller
      * @param array $country
      * @param bool $video
      */
-    public function fetching($strSearch,$nb,$country = ['CM'],$video = false)
+    public function fetching($strSearch,$nb,$country = ['CM'],$video = false,$strict = false)
     {
 
         $client = new Client();
@@ -427,11 +449,18 @@ class CrawlerController extends Controller
         $client->setHeader('Accept-Encoding', 'gzip, deflate, br');
         $client->setHeader('Connection:', 'Keep-Alive');
 
-
+     //   echo $strSearch ."<br/>";
         foreach ($country as $pays) {
 
-            $url = $this->queryToUrl($strSearch, 0, $nb, $pays,$video);
-           // $url = $this->queryToUrl($strSearch, 0, $nb, $country[0],$video);
+            if($strict)
+            {
+                $url = $this->queryToUrl('"'.$strSearch.'"', 0, $nb, $pays,$video);
+            }
+            else
+            {
+                $url = $this->queryToUrl($strSearch, 0, $nb, $pays,$video);
+            }
+            // $url = $this->queryToUrl($strSearch, 0, $nb, $country[0],$video);
 
             //echo $strSearch;
             //$url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
@@ -1230,9 +1259,9 @@ class CrawlerController extends Controller
         $documents = [];
         switch ($index)
         {
-            case 1: $documents = ['pdf','doc', 'docx','xml'];
+            case 1: $documents = ['pdf','doc', 'docx','tex'];
                 break;
-            case 2: $documents = ['ppt','pptx', 'odp','tex'];
+            case 2: $documents = ['ppt','pptx', 'odp','xml'];
                 break;
             case 3: $documents = ['gdoc','docm','log','odt','txt'];
                 break;

@@ -16,13 +16,13 @@
                         <button class="level-item" v-show="!isLove" style="margin-bottom: 5px" @click.prevent="submitLove">
                             <span class="icon is-small"><i class="fa fa-heart"></i></span>
                         </button>
-                        <a class="level-item" v-show="isLove">
-                            <span class="icon is-small"><i class="fa fa-trash"></i></span>
+                        <a class="level-item" v-show="isLove" @click.prevent="submitFLove">
+                            <span class="icon is-small"><i class="fa fa-heart"></i></span>
                         </a>
                         <button class="level-item" v-show="!isTrash" style="margin-bottom: 5px" @click.prevent="submitTrash">
-                            <span class="icon is-small"><i class="fa fa-heart"></i></span>
+                            <span class="icon is-small"><i class="fa fa-trash"></i></span>
                         </button>
-                        <a class="level-item" v-show="isLove">
+                        <a class="level-item" v-show="isTrash" @click.prevent="submitFTrash">
                             <span class="icon is-small"><i class="fa fa-trash"></i></span>
                         </a>
                         <!--a class="level-item">
@@ -89,6 +89,12 @@
             },
             submitTrash(){
                 this.isTrash = true;
+            },
+            submitFLove(){
+                this.isLove = false;
+            },
+            submitFTrash(){
+                this.isTrash = false;
             }
         }
     }

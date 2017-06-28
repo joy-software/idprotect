@@ -98,9 +98,12 @@
                     console.log(this.form.keywords);
                     this.form.post_(this.url+'/search').then(result => {
                         this.$store.commit('active');
-                        this.$store.commit('setProgress',20);
-                        this.$store.commit('load',result)
-                        axios.get(this.url+'/searchV/'+this.form.keywords).then(result => {
+                        this.$store.commit('setProgress',10);
+                        this.$store.commit('load',result);
+                        axios.get(this.url+'/searchII/'+this.form.keywords).then(result => {
+                            this.$store.commit('setProgress',25);
+                            this.$store.commit('add',result.data);
+                            axios.get(this.url+'/searchV/'+this.form.keywords).then(result => {
                                 this.$store.commit('setProgress',40);
                                 this.$store.commit('add',result.data);
                                 axios.get(this.url+'/searchI/'+this.form.keywords).then(result => {
@@ -111,7 +114,10 @@
                                         this.$store.commit('add',result.data)
                                         axios.get(this.url+'/searchD/'+this.form.keywords +'/'+1).then(result => {
                                             this.$store.commit('setProgress',100);
-                                            this.$store.commit('add',result.data)
+                                            this.$store.commit('add',result.data);
+                                            this.form.errors.clear();
+                                            this.requestOn = false;
+                                            show_error = false;
                                         }).catch(errors => {
                                             console.log(errors);
                                             let error = [];
@@ -145,10 +151,14 @@
                                 this.form.errors.record(erreur);
                                 this.requestOn = false
                             });
-
-                        this.form.errors.clear();
-                        this.requestOn = false;
-                        show_error = false;
+                        })
+                            .catch(errors => {
+                                console.log(errors);
+                                let error = [];
+                                error.push(this.error);
+                                erreur.keywords = error;
+                                this.form.errors.record(erreur);
+                                this.requestOn = false});
                     }).catch(error => {
 
                         // alert(error.indexOf('DOCTYPE'));

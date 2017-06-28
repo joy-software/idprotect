@@ -12372,6 +12372,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         },
         submitTrash: function submitTrash() {
             this.isTrash = true;
+        },
+        submitFLove: function submitFLove() {
+            this.isLove = false;
+        },
+        submitFTrash: function submitFTrash() {
+            this.isTrash = false;
         }
     }
 });
@@ -12478,20 +12484,34 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 console.log(this.form.keywords);
                 this.form.post_(this.url + '/search').then(function (result) {
                     _this.$store.commit('active');
-                    _this.$store.commit('setProgress', 20);
+                    _this.$store.commit('setProgress', 10);
                     _this.$store.commit('load', result);
-                    axios.get(_this.url + '/searchV/' + _this.form.keywords).then(function (result) {
-                        _this.$store.commit('setProgress', 40);
+                    axios.get(_this.url + '/searchII/' + _this.form.keywords).then(function (result) {
+                        _this.$store.commit('setProgress', 25);
                         _this.$store.commit('add', result.data);
-                        axios.get(_this.url + '/searchI/' + _this.form.keywords).then(function (result) {
-                            _this.$store.commit('setProgress', 60);
+                        axios.get(_this.url + '/searchV/' + _this.form.keywords).then(function (result) {
+                            _this.$store.commit('setProgress', 40);
                             _this.$store.commit('add', result.data);
-                            axios.get(_this.url + '/searchS/' + _this.form.keywords + '/' + 1).then(function (result) {
-                                _this.$store.commit('setProgress', 80);
+                            axios.get(_this.url + '/searchI/' + _this.form.keywords).then(function (result) {
+                                _this.$store.commit('setProgress', 60);
                                 _this.$store.commit('add', result.data);
-                                axios.get(_this.url + '/searchD/' + _this.form.keywords + '/' + 1).then(function (result) {
-                                    _this.$store.commit('setProgress', 100);
+                                axios.get(_this.url + '/searchS/' + _this.form.keywords + '/' + 1).then(function (result) {
+                                    _this.$store.commit('setProgress', 80);
                                     _this.$store.commit('add', result.data);
+                                    axios.get(_this.url + '/searchD/' + _this.form.keywords + '/' + 1).then(function (result) {
+                                        _this.$store.commit('setProgress', 100);
+                                        _this.$store.commit('add', result.data);
+                                        _this.form.errors.clear();
+                                        _this.requestOn = false;
+                                        show_error = false;
+                                    }).catch(function (errors) {
+                                        console.log(errors);
+                                        var error = [];
+                                        error.push(_this.error);
+                                        erreur.keywords = error;
+                                        _this.form.errors.record(erreur);
+                                        _this.requestOn = false;
+                                    });
                                 }).catch(function (errors) {
                                     console.log(errors);
                                     var error = [];
@@ -12524,10 +12544,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                         _this.form.errors.record(erreur);
                         _this.requestOn = false;
                     });
-
-                    _this.form.errors.clear();
-                    _this.requestOn = false;
-                    show_error = false;
                 }).catch(function (error) {
 
                     // alert(error.indexOf('DOCTYPE'));
@@ -33028,7 +33044,13 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       value: (_vm.isLove),
       expression: "isLove"
     }],
-    staticClass: "level-item"
+    staticClass: "level-item",
+    on: {
+      "click": function($event) {
+        $event.preventDefault();
+        _vm.submitFLove($event)
+      }
+    }
   }, [_vm._m(1)]), _vm._v(" "), _c('button', {
     directives: [{
       name: "show",
@@ -33050,10 +33072,16 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     directives: [{
       name: "show",
       rawName: "v-show",
-      value: (_vm.isLove),
-      expression: "isLove"
+      value: (_vm.isTrash),
+      expression: "isTrash"
     }],
-    staticClass: "level-item"
+    staticClass: "level-item",
+    on: {
+      "click": function($event) {
+        $event.preventDefault();
+        _vm.submitFTrash($event)
+      }
+    }
   }, [_vm._m(3)])])])]), _vm._v(" "), _c('div', {
     staticClass: "content subtitle is-6",
     domProps: {
@@ -33081,13 +33109,13 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
   return _c('span', {
     staticClass: "icon is-small"
   }, [_c('i', {
-    staticClass: "fa fa-trash"
+    staticClass: "fa fa-heart"
   })])
 },function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('span', {
     staticClass: "icon is-small"
   }, [_c('i', {
-    staticClass: "fa fa-heart"
+    staticClass: "fa fa-trash"
   })])
 },function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('span', {
@@ -33291,7 +33319,8 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
         "preview": resul.preview,
         "link": resul.links,
         "type": resul.category,
-        "video": resul.videoLink
+        "video": resul.videoLink,
+        "id": resul.id
       }
     })]
   }), _vm._v(" "), (_vm.emptyResult && _vm.search) ? _c('alert', {

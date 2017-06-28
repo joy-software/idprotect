@@ -52,6 +52,7 @@ Route::group(['prefix' => $language], function () {
         'uses'    => 'SearchController@store']);
 
     Route::get('/search/{request}', 'CrawlerController@search');
+    Route::get('/searchII/{request}', 'CrawlerController@search');
     Route::get('/searchS/{request}/{index}', 'CrawlerController@searchSocial');
     Route::get('/searchD/{request}/{index}', 'CrawlerController@searchDocument');
     Route::get('/searchV/{request}', 'CrawlerController@searchVideo');
