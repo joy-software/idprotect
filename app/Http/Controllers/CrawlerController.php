@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Search;
 use App\Search_Result;
 use Goutte\Client;
 use GuzzleHttp\Client as GuzzleClient;
@@ -14,6 +15,7 @@ use GuzzleHttp\Handler\CurlHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleTor\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\DomCrawler\Crawler;
@@ -31,10 +33,15 @@ class CrawlerController extends Controller
     public $resultVideo = [];
     public $resultBodyV = [];
     public $searchResults = [];
+    public $searchResultsDB = [];
     public $count = 0;
     public $countV = 0;
     public $proxy = null;
     public $stringSearch = "";
+    public $search_;
+    public $eager = false;
+    public $continue = false;
+
 
     public function __construct()
     {
@@ -352,6 +359,96 @@ class CrawlerController extends Controller
 
     }
 
+    /**
+     * Get records from the DB and assign it to the global results
+     * @param $request
+     * @param $category
+     */
+    public function Loading($request,$category)
+    {
+        $idem = Search::whereKeywords(strtolower($request))->get()->count();
+
+
+        if($idem == 0)
+        {
+            $this->search_ = new Search([
+                'keywords' => strtolower($request)
+            ]);
+            $user = Auth::user();
+            $this->search_->user()->associate($user);
+            $this->search_->save();
+        }
+        else
+        {
+            $this->search_ = Search::whereKeywords(strtolower($request))->get()->first();
+            switch ($category) {
+                case "all":
+                    if($this->eager)
+                    {
+                        $this->searchResultsDB = $this->assign($this->search_->searchResults_A);
+                    }
+                    else
+                    {
+                        $this->searchResults = $this->assign($this->search_->searchResults_A);
+                    }
+
+                    break;
+                case "social":
+                    if($this->eager)
+                    {
+                        $this->searchResultsDB = $this->assign($this->search_->searchResults_S);
+                    }
+                    else
+                    {
+                        $this->searchResults = $this->assign($this->search_->searchResults_S);
+                    }
+                    break;
+                case "images":
+                    if($this->eager)
+                    {
+                        $this->searchResultsDB = $this->assign($this->search_->searchResults_I);
+                    }
+                    else
+                    {
+                        $this->searchResults = $this->assign($this->search_->searchResults_I);
+                    }
+                    break;
+                case "video":
+                    if($this->eager)
+                    {
+                        $this->searchResultsDB = $this->assign($this->search_->searchResults_V);
+                    }
+                    else
+                    {
+                        $this->searchResults = $this->assign($this->search_->searchResults_V);
+                    }
+                    break;
+                case "document":
+                    if($this->eager)
+                    {
+                        $this->searchResultsDB = $this->assign($this->search_->searchResults_D);
+                    }
+                    else
+                    {
+                        $this->searchResults = $this->assign($this->search_->searchResults_D);
+                    }
+                    break;
+                default:
+                    if($this->eager)
+                    {
+                        $this->searchResultsDB = $this->assign($this->search_->searchResults_A);
+                    }
+                    else
+                    {
+                        $this->searchResults = $this->assign($this->search_->searchResults_A);
+                    }
+            }
+
+
+           // print_r($this->searchResults);
+        }
+    }
+
     /***
      * Getting the result over a search query
      * @param $request
@@ -363,56 +460,63 @@ class CrawlerController extends Controller
         /*$command = "allintitle%3A+";
         $command1 = "insubject%3A+";
         if(empty($request)) $request = "ENSP Yaounde";
-
-         $nb = 40;
-        $counts = 0;
-        $strSearch = '"'.$request.'"';
-        //echo $strSearch;
-        $this->fetching($strSearch,$country,$nb);
-        $counts = $this->recording($request,$counts,false);
 //*/
+
+        $this->Loading($request,'all');
 
         $counts = 0;
         $nb = 40;
         $this->count = 0;
-        $this->fetching($request,$nb);
-        $this->recording($request,$counts,true);
-//*/
 
-       // $this->searchSocial($request);
-        //$this->searchSocial($request,$country,2);
-       // $this->searchSocial($request,$country,3);
-        //$this->searchSocial($request,$country,4);
-        //$this->searchDocument($request);
-        //$this->searchDocument($request,$country);
-        //$this->fetching_images($request);
-        //$this->recording_images($request);
-        //print_r($this->fetching_img($this->resultLink_text[0][0]));
-        //$this->searchVideo($request);
+        $this->fetching($request,$nb);
+
+        if($this->continue)
+        {
+            $this->recording($request,$counts,true);
+        }
 
         return response()->json($this->searchResults);//*/
     }
 
-    /***
-     * Getting the result over a search query
+    /**
+     *  Getting the result over a search query
      * @param $request
      * @param array $country
      * @return \Illuminate\Http\JsonResponse
      */
     public function searchII($request, $country = ['CM','FR','US'])
     {
-
+        $this->Loading($request,'all');
 
         $counts = 0;
         $nb = 40;
         $this->count = 0;
-        $search = '"'.$request.'"';
-        $this->fetching($search,$nb,false,false,true);
-        $this->recording($request,$counts,true);
-//*/
+        $search = $request;
+        $country = ['CM'];
+
+        $this->fetching($search,$nb,$country,false,true);
+
+        if($this->continue)
+        {
+            $this->recording($request,$counts,true);
+        }
+
+
 
 
         return response()->json($this->searchResults);//*/
+    }
+
+    public function assign($objects)
+    {
+        $send = [];
+
+        foreach($objects as $object)
+        {
+            array_push($send,$object);
+        }
+
+        return $send;
     }
 
     /***
@@ -422,20 +526,25 @@ class CrawlerController extends Controller
      */
     public function searchImages($request)
     {
+        $this->Loading($request,'images');
+
        $this->fetching_images($request);
-       $this->recording_images($request);
 
-
+        if($this->continue)
+        {
+            $this->recording_images($request);
+        }
 
         return response()->json($this->searchResults);//*/
     }
 
     /**
-     *  Getting result of the search query
+     * Getting result of the search query
      * @param $strSearch
      * @param $nb
      * @param array $country
      * @param bool $video
+     * @param bool $strict
      */
     public function fetching($strSearch,$nb,$country = ['CM'],$video = false,$strict = false)
     {
@@ -464,86 +573,116 @@ class CrawlerController extends Controller
 
             //echo $strSearch;
             //$url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
+
+            //check if the connection to remote site have succeed
+
+            $crawler = null;
             // Go to the symfony.com website
-            $crawler = $client->request('GET', $url);;
-            //echo $crawler->html();
-            $this->resultHeader[$this->count] = [];
-            $this->resultLink[$this->count] = [];
-            $this->resultLink_text[$this->count] = [];
-            $this->resultBody[$this->count] = [];
-           if($video)
-           {
-               $this->resultHeaderV[$this->countV] = [];
-               $this->resultLinkV[$this->countV] = [];
-               $this->resultLink_textV[$this->countV] = [];
-               $this->resultVideo[$this->countV] = [];
-               $this->resultBodyV[$this->countV] = [];
-           }
-            //on récupère les entêtes des résultats
-            $crawler->filter('td div#center_col div.g')->each(function (Crawler $node, $i) {
+            try {
 
-                $header = $node->filter('h3 a');
-                if ($header->count() > 0) {
-                    $header = $header->html();
-                    //print("<br/>".$header);
-                    if (strpos($header, 'mages for') == false) {
-                        //echo'<br/> '.$this->count.'<br/>';
-                        //print_r($this->resultHeader);
-                        array_push($this->resultHeader[$this->count], $header);
-                        $link = $node->filter('div cite')->html();
-
-                        array_push($this->resultLink[$this->count], $link);
-                        $link = $node->filter('div cite')->text();
-                        array_push($this->resultLink_text[$this->count], $link);
-
-                        if (strpos($link, 'books.google.com') == false) {
-                            array_push($this->resultBody[$this->count], $node->filter('div span.st')->html());
-                        } else {
-                            array_push($this->resultBody[$this->count], $node->filter('div.s')->html());
-                        }
-                    }
+                $crawler = $client->request('GET', $url);
+                $this->continue = true;
+            } catch (ConnectException $e) {
+                //Catch the guzzle connection errors over here.These errors are something
+                // like the connection failed or some other network error
+                $number = -1;
+                if($this->eager)
+                {
+                    $number = count($this->searchResultsDB);
+                }
+                else
+                {
+                    $number = count($this->searchResults);
                 }
 
-            });
-            if($video)
-            {
-                $crawler->filter('td div#center_col div.g.videobox')->each(function (Crawler $node, $i) {
-                    $video = $node->filter('td img')->attr('src');
-                    array_push($this->resultVideo[$this->countV], $video);
-                    $header = $node->filter('td h3 a');
-                    if ($header->count() > 0) {
-                        $link = $header->attr('href');
-                        $link = substr($link,strpos($link,'='));
-                        $link = substr($link,1,strpos($link,'&')-1);
-                        array_push($this->resultLink_textV[$this->countV], $link);
-
-                        $header = $header->html();
-                        //print("<br/>".$header);
-                        if (strpos($header, 'mages for') == false) {
-                            array_push($this->resultHeaderV[$this->countV], $header);
-                            $link = $node->filter('div cite')->html();
-
-                            array_push($this->resultLinkV[$this->countV], $link);
-
-
-                            if (strpos($link, 'books.google.com') == false) {
-                                array_push($this->resultBodyV[$this->countV], $node->filter('div span.st')->html());
-                            } else {
-                                array_push($this->resultBodyV[$this->countV], $node->filter('div.s')->html());
-                            }
-                        }
-                    }
-
-                });
+                if(!($number > 0))
+                {
+                    throwException($e);
+                }
 
             }
-            $this->count++;
-            if($video)
-            {
-                $this->countV++;
-            }
-            $min =[5,8,9,10,12,7];
-            sleep(rand(0,1)*count($min));
+
+           if($this->continue)
+           {
+               //echo $crawler->html();
+               $this->resultHeader[$this->count] = [];
+               $this->resultLink[$this->count] = [];
+               $this->resultLink_text[$this->count] = [];
+               $this->resultBody[$this->count] = [];
+               if($video)
+               {
+                   $this->resultHeaderV[$this->countV] = [];
+                   $this->resultLinkV[$this->countV] = [];
+                   $this->resultLink_textV[$this->countV] = [];
+                   $this->resultVideo[$this->countV] = [];
+                   $this->resultBodyV[$this->countV] = [];
+               }
+               //on récupère les entêtes des résultats
+               $crawler->filter('td div#center_col div.g')->each(function (Crawler $node, $i) {
+
+                   $header = $node->filter('h3 a');
+                   if ($header->count() > 0) {
+                       $header = $header->html();
+                       //print("<br/>".$header);
+                       if (strpos($header, 'mages for') == false) {
+                           //echo'<br/> '.$this->count.'<br/>';
+                           //print_r($this->resultHeader);
+                           array_push($this->resultHeader[$this->count], $header);
+                           $link = $node->filter('div cite')->html();
+
+                           array_push($this->resultLink[$this->count], $link);
+                           $link = $node->filter('div cite')->text();
+                           array_push($this->resultLink_text[$this->count], $link);
+
+                           if (strpos($link, 'books.google.com') == false) {
+                               array_push($this->resultBody[$this->count], $node->filter('div span.st')->html());
+                           } else {
+                               array_push($this->resultBody[$this->count], $node->filter('div.s')->html());
+                           }
+                       }
+                   }
+
+               });
+               if($video)
+               {
+                   $crawler->filter('td div#center_col div.g.videobox')->each(function (Crawler $node, $i) {
+                       $video = $node->filter('td img')->attr('src');
+                       array_push($this->resultVideo[$this->countV], $video);
+                       $header = $node->filter('td h3 a');
+                       if ($header->count() > 0) {
+                           $link = $header->attr('href');
+                           $link = substr($link,strpos($link,'='));
+                           $link = substr($link,1,strpos($link,'&')-1);
+                           array_push($this->resultLink_textV[$this->countV], $link);
+
+                           $header = $header->html();
+                           //print("<br/>".$header);
+                           if (strpos($header, 'mages for') == false) {
+                               array_push($this->resultHeaderV[$this->countV], $header);
+                               $link = $node->filter('div cite')->html();
+
+                               array_push($this->resultLinkV[$this->countV], $link);
+
+
+                               if (strpos($link, 'books.google.com') == false) {
+                                   array_push($this->resultBodyV[$this->countV], $node->filter('div span.st')->html());
+                               } else {
+                                   array_push($this->resultBodyV[$this->countV], $node->filter('div.s')->html());
+                               }
+                           }
+                       }
+
+                   });
+
+               }
+               $this->count++;
+               if($video)
+               {
+                   $this->countV++;
+               }
+               $min =[5,8,9,10,12,7];
+               sleep(rand(0,1)*count($min));
+           }
             //print count($searchResults);
         }
          //$url  = 'http://freeproxylists.net/fr/?c=&pt=&pr=HTTPS&a%5B%5D=0&a%5B%5D=1&a%5B%5D=2&u=90';
@@ -558,15 +697,52 @@ class CrawlerController extends Controller
      */
     public function fetching_images($strSearch)
     {
-        //$client = new Client();
-        //$client->setClient(new GuzzleClient($this->init()));
-        //$client->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+        // $client->setClient(new GuzzleClient($config));
 
+        $client = new Client();
+            $client->setClient(new GuzzleClient(['cookies' => true]));
+            $client->setHeader('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+            //AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063');
+            $client->setHeader('Accept', '*/*');
+            $client->setHeader('Accept-Encoding', 'gzip, deflate, br');
+            $client->setHeader('Connection:', 'Keep-Alive');
                 //echo 'get';
-            $url = $this->queryToUrl_min($strSearch);
 
-            $crawler = $this->launch_proxy($url,true);
 
+        $url = $this->queryToUrl_min($strSearch);
+
+        //check if the connection to remote site have succeed
+        $crawler = null;
+        // Go to the symfony.com website
+        try {
+
+            $crawler = $client->request('GET', $url);
+            //$crawler = $this->launch_proxy($url,true);
+            $this->continue = true;
+        } catch (ConnectException $e) {
+            //Catch the guzzle connection errors over here.These errors are something
+            // like the connection failed or some other network error
+            $number = -1;
+            if($this->eager)
+            {
+                $number = count($this->searchResultsDB);
+            }
+            else
+            {
+                $number = count($this->searchResults);
+            }
+
+            //On renvoie l'execption
+            if(!($number > 0))
+            {
+                $client->request('GET', $url);
+            }
+
+        }
+
+
+        if($this->continue)
+        {
             //echo $crawler[0]->html();
             $this->count = 0;
             $this->resultHeader[$this->count] = [];
@@ -576,63 +752,63 @@ class CrawlerController extends Controller
             //echo 'result';
             $this->stringSearch = $strSearch;
             //on récupère les entêtes des résultats
-        $results = $crawler[0]->filter( 'div#ires table tr td')->each(function (Crawler $node, $i) {
-               // echo 'ok';
-                        return $node;
-        });
-               //print_r($results);
-        foreach ($results as $result)
-        {
+            //$results = $crawler[0]->filter( 'div#ires table tr td')->each(function (Crawler $node, $i) {
+            $results = $crawler->filter( 'div#ires table tr td')->each(function (Crawler $node, $i) {
+                // echo 'ok';
+                return $node;
+            });
+            //print_r($results);
+            foreach ($results as $result) {
 
-           // $header = $result->filter('cite')->html();
-           // $link = $result->filter('a')->attr('href');
-            $preview = $result->text();
+                // $header = $result->filter('cite')->html();
+                // $link = $result->filter('a')->attr('href');
+                $preview = $result->text();
 
-           // echo 'joy ';
-            //echo $preview;
-            //echo ' c\'est bon';
-            if($this->contains_($preview,$this->stringSearch,true))
-            {
-                $header = $result->filter('cite')->html();
-                $link = $result->filter('a img')->attr('src');
-                array_push($this->resultHeader[$this->count], $header);
-                array_push($this->resultLink[$this->count], $link);
-                array_push($this->resultBody[$this->count], $preview);
-                $link = $result->filter('a')->attr('href');
-                $link = substr($link,strpos($link,'='));
-                $link = substr($link,1,strpos($link,'&')-1);
-                array_push($this->resultLink_text[$this->count], $link);
-/*
-                $crawler_ = $crawler[1]->request('GET', $link);
-                $images = $crawler_->filter( 'img')->each(function (Crawler $node_, $i) {
+                // echo 'joy ';
+                //echo $preview;
+                //echo ' c\'est bon';
+                if ($this->contains_($preview, $this->stringSearch, true)) {
+                    $header = $result->filter('cite')->html();
+                    $link = $result->filter('a img')->attr('src');
+                    array_push($this->resultHeader[$this->count], $header);
+                    array_push($this->resultLink[$this->count], $link);
+                    array_push($this->resultBody[$this->count], $preview);
+                    $link = $result->filter('a')->attr('href');
+                    $link = substr($link, strpos($link, '='));
+                    $link = substr($link, 1, strpos($link, '&') - 1);
+                    array_push($this->resultLink_text[$this->count], $link);
+                    /*
+                                    $crawler_ = $crawler[1]->request('GET', $link);
+                                    $images = $crawler_->filter( 'img')->each(function (Crawler $node_, $i) {
 
-                    return $node_;
+                                        return $node_;
 
-                    // echo $test .' <br/>';
-                });
+                                        // echo $test .' <br/>';
+                                    });
 
-                $height =  substr($preview,strpos($preview,'×'));
-                $ext = substr($height,strpos($height,'-')+2);
-                $ext = trim($ext);
-                $height =  substr($height,strpos($height,'×'),strpos($height,'–'));
-                $height =  substr($height,strpos($height,'×')+2,strpos($height,'–')-1);
-                $height = trim($height);
-                foreach ($images as $image)
-                {
-                    if(($this->contains_($image->attr('alt'),$strSearch,true))||
-                        ($this->contains_($image->attr('src'),$ext,true,false)) && (strpos($image->attr('height'), $height) !== false) )
-                    {
+                                    $height =  substr($preview,strpos($preview,'×'));
+                                    $ext = substr($height,strpos($height,'-')+2);
+                                    $ext = trim($ext);
+                                    $height =  substr($height,strpos($height,'×'),strpos($height,'–'));
+                                    $height =  substr($height,strpos($height,'×')+2,strpos($height,'–')-1);
+                                    $height = trim($height);
+                                    foreach ($images as $image)
+                                    {
+                                        if(($this->contains_($image->attr('alt'),$strSearch,true))||
+                                            ($this->contains_($image->attr('src'),$ext,true,false)) && (strpos($image->attr('height'), $height) !== false) )
+                                        {
 
-                        $link =  $image->attr('src');
-                        echo $link ."<br/>";
-                        array_push($this->resultLink_text[$this->count], $link);
-                    }
+                                            $link =  $image->attr('src');
+                                            echo $link ."<br/>";
+                                            array_push($this->resultLink_text[$this->count], $link);
+                                        }
+                                    }
+                                    //*/
+
+                    // echo 'header '.$header.'<br/>'. ' link: '.$link.'<br/>'.' preview'.$preview.'<br/> <br/>';
                 }
-                //*/
-
-               // echo 'header '.$header.'<br/>'. ' link: '.$link.'<br/>'.' preview'.$preview.'<br/> <br/>';
-            }
 //            sleep(1);
+            }
         }
 
     }
@@ -729,6 +905,8 @@ class CrawlerController extends Controller
 
                         if(!$this->contains_searchResult($searchResult,$request))
                         {
+                            $searchResult->search()->associate($this->search_);
+                            $searchResult->save();
                             if($after)
                             {
                                 array_splice( $this->searchResults, 2*$compt, 0, array($searchResult) );
@@ -736,6 +914,10 @@ class CrawlerController extends Controller
                             else
                             {
                                 array_push($this->searchResults, $searchResult);
+                            }
+                            if($this->eager)
+                            {
+                                array_push($this->searchResultsDB, $searchResult);
                             }
                             $compt++;
                             $counts++;
@@ -774,6 +956,8 @@ class CrawlerController extends Controller
 
                         if(!$this->contains_searchResult($searchResult,$request))
                         {
+                            $searchResult->search()->associate($this->search_);
+                            $searchResult->save();
                             if($after)
                             {
                                 array_splice( $this->searchResults, 2*$compt, 0, array($searchResult) );
@@ -781,6 +965,10 @@ class CrawlerController extends Controller
                             else
                             {
                                 array_push($this->searchResults, $searchResult);
+                            }
+                            if($this->eager)
+                            {
+                                array_push($this->searchResultsDB, $searchResult);
                             }
                             $compt++;
                             $counts++;
@@ -820,6 +1008,8 @@ class CrawlerController extends Controller
 
                         if(!$this->contains_searchResult($searchResult,$request))
                         {
+                            $searchResult->search()->associate($this->search_);
+                            $searchResult->save();
                             if($after)
                             {
                                 array_splice( $this->searchResults, 2*$compt, 0, array($searchResult) );
@@ -827,6 +1017,10 @@ class CrawlerController extends Controller
                             else
                             {
                                 array_push($this->searchResults, $searchResult);
+                            }
+                            if($this->eager)
+                            {
+                                array_push($this->searchResultsDB, $searchResult);
                             }
                             $compt++;
                             $counts++;
@@ -866,8 +1060,13 @@ class CrawlerController extends Controller
 
                     if(!$this->contains_searchResult($searchResult,$request))
                     {
+                        $searchResult->search()->associate($this->search_);
+                        $searchResult->save();
                         array_push($this->searchResults, $searchResult);
-
+                        if($this->eager)
+                        {
+                            array_push($this->searchResultsDB, $searchResult);
+                        }
                        // $compt++;
                     }
 
@@ -924,10 +1123,16 @@ class CrawlerController extends Controller
                         ]);
 
                         if (!$this->contains_searchResult($searchResult, $request)) {
+                            $searchResult->search()->associate($this->search_);
+                            $searchResult->save();
                             if ($after) {
                                 array_splice($this->searchResults, 2 * $compt, 0, array($searchResult));
                             } else {
                                 array_push($this->searchResults, $searchResult);
+                            }
+                            if($this->eager)
+                            {
+                                array_push($this->searchResultsDB, $searchResult);
                             }
                             $compt++;
                             $counts++;
@@ -952,6 +1157,73 @@ class CrawlerController extends Controller
     }
 
     /**
+     * Adding new result
+     * @param $request
+     * @return mixed
+     */
+    public function addsearch($request)
+    {
+        $this->eager = true;
+        return $this->search($request);
+    }
+
+    /**
+     * Adding new result
+     * @param $request
+     * @return mixed
+     */
+    public function addsearchII($request)
+    {
+        $this->eager = true;
+        return $this->searchII($request);
+    }
+
+    /**
+     * Adding new result
+     * @param $request
+     * @return mixed
+     */
+    public function addsearchSocial($request,$index)
+    {
+        $this->eager = true;
+        $this->searchSocial($request,$index);
+
+    }
+
+    /**
+     * Adding new result
+     * @param $request
+     * @return mixed
+     */
+    public function addsearchDocument($request,$index)
+    {
+        $this->eager = true;
+        $this->searchDocument($request);
+    }
+
+    /**
+     * Adding new result
+     * @param $request
+     * @return mixed
+     */
+    public function addsearchImages($request)
+    {
+        $this->eager = true;
+        $this->searchImages($request);
+    }
+
+    /**
+     * Adding new result
+     * @param $request
+     * @return mixed
+     */
+    public function addsearchVideo($request)
+    {
+        $this->eager = true;
+        $this->searchVideo($request);
+    }
+
+    /**
      * To check if a result is already inside the result array
      * if not we can do the push
      * @param $searchResult
@@ -969,16 +1241,33 @@ class CrawlerController extends Controller
             {
                 //echo "else <br/>";
                 //check the result is already record
-                foreach ($this->searchResults as $result)
+                if($this->eager)
                 {
-                   // echo "<br/> a";
-                    if(strpos(strtolower($result->links) ,strtolower($searchResult->links)) !== false)
+                    foreach ($this->searchResultsDB as $result)
                     {
-                       // echo "return 1";
-                        return true;
-                    }
-                    //echo "yes";
+                        // echo "<br/> a";
+                        if(strpos(strtolower($result->links) ,strtolower($searchResult->links)) !== false)
+                        {
+                            // echo "return 1";
+                            return true;
+                        }
+                        //echo "yes";
 
+                    }
+                }
+                else
+                {
+                    foreach ($this->searchResults as $result)
+                    {
+                        // echo "<br/> a";
+                        if(strpos(strtolower($result->links) ,strtolower($searchResult->links)) !== false)
+                        {
+                            // echo "return 1";
+                            return true;
+                        }
+                        //echo "yes";
+
+                    }
                 }
             }
        // echo "rien";
@@ -1224,6 +1513,7 @@ class CrawlerController extends Controller
         $nb = 5;
         $this->count = 0;
 
+        $this->Loading($request,'social');
 
         foreach ($socials as $social) {
             //echo $strSearch;
@@ -1232,17 +1522,12 @@ class CrawlerController extends Controller
             sleep(1);
         }
 
-      /*  $this->count = 0;
-        $strSearch = $request;
 
-        foreach ($socials as $social) {
+        if($this->continue)
+        {
+            $this->recording_social($request,$counts,false,"social");
+        }
 
-            //echo $strSearch;
-            $this->fetching($strSearch." ".$social,$country,$nb);
-
-        }//*/
-         $counts = $this->recording_social($request,$counts,false,"social");
-       // echo $counts;
 
         return response()->json($this->searchResults);
     }
@@ -1278,6 +1563,7 @@ class CrawlerController extends Controller
         $nb = 20;
         $this->count = 0;
 
+        $this->Loading($request,'document');
 
         foreach ($documents as $document) {
             //echo $strSearch;
@@ -1285,25 +1571,24 @@ class CrawlerController extends Controller
             //$counts = $this->recording($request,$counts,false);
         }
 
+        if($this->continue)
+        {
+            $this->recording_social($request,$counts,false,"document");
+        }
 
-        $this->recording_social($request,$counts,false,"document");
-        // echo $counts;
 
-        //
         return response()->json($this->searchResults);
     }
 
 
-
     /**
-     * search for some traces in files
+     *  search for some traces in files
      * @param $request
      * @param array $country
+     * @return \Illuminate\Http\JsonResponse
      */
     public function searchVideo($request,$country = ['CM','US','FR'])
     {
-
-
         $counts = 0;
         //$strSearch = '"'.$request.'"';
         $strSearch = $request;
@@ -1311,17 +1596,15 @@ class CrawlerController extends Controller
         $this->count = 0;
         $this->countV = 0;
 
+        $this->Loading($request,'video');
 
-       // foreach ($country as $pays) {
-            //echo $strSearch;
-           // $this->fetching($strSearch,$pays,$nb,true);
-            $this->fetching($strSearch,$nb,$country,true);
-            //$counts = $this->recording($request,$counts,false);
-     //   }
+        $this->fetching($strSearch,$nb,$country,true);
 
+        if($this->continue)
+        {
+            $this->recording($request,$counts,false,"video",true);
+        }
 
-        $this->recording($request,$counts,false,"video",true);
-        // echo $counts;
 
         return response()->json($this->searchResults);
     }

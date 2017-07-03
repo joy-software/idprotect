@@ -12,7 +12,12 @@
             </template>
             <template v-for="resul in results">
                 <result  :title="resul.title" :preview="resul.preview" :link="resul.links"
-                         :type="resul.category" :video="resul.videoLink" :id="resul.id" style="margin-bottom: 15px">
+                         :type="resul.category" :statut="resul.statut" :video="resul.videoLink"
+                         :id="resul.id" style="margin-bottom: 15px" v-if="!(category === 'images')">
+                </result>
+                <result  :title="resul.title" :preview="resul.preview" :link="resul.links" :links="resul.link"
+                         :type="resul.category" :statut="resul.statut" :video="resul.videoLink"
+                         :id="resul.id" style="margin-bottom: 15px" v-else>
                 </result>
             </template>
            <alert v-if="emptyResult && search" @close="CloseNotif">

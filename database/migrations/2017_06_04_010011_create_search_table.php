@@ -18,10 +18,10 @@ class CreateSearchTable extends Migration
             $table->text('keywords')->nullable();
             $table->timestamps();
 
-            $table->integer('profile_id')->unsigned()->nullable();
-            $table->foreign('profile_id')
+            $table->integer('user_id')->unsigned()->nullable();
+            $table->foreign('user_id')
                 ->references('id')
-                ->on('profile')
+                ->on('users')
                 ->onDelete('restrict')
                 ->onUpdate('restrict');
         });
@@ -37,7 +37,7 @@ class CreateSearchTable extends Migration
     public function down()
     {
         Schema::table('search', function(Blueprint $table) {
-            $table->dropForeign('search_profile_id_foreign');
+            $table->dropForeign('search_user_id_foreign');
         });
         Schema::dropIfExists('search');
     }

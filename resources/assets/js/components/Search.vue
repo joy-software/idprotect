@@ -65,6 +65,7 @@
         },
 
         mounted(){
+            this.$store.commit('setUrl',this.url);
             // this.urls = this.url;
             $(window).scroll(function () {
                 if ($(window).scrollTop() > 280) {
@@ -95,7 +96,6 @@
                     this.$store.commit('load',[]);
                     this.requestOn = true;
                     this.$store.commit('activeP');
-                    console.log(this.form.keywords);
                     this.form.post_(this.url+'/search').then(result => {
                         this.$store.commit('active');
                         this.$store.commit('setProgress',10);

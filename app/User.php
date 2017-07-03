@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Notifications\ResetPassword;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -24,6 +25,18 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @method static \Illuminate\Database\Query\Builder|\App\User wherePassword($value)
  * @method static \Illuminate\Database\Query\Builder|\App\User whereRememberToken($value)
  * @method static \Illuminate\Database\Query\Builder|\App\User whereUpdatedAt($value)
+ * @property string|null $surname
+ * @property string|null $nickname
+ * @property string|null $profession
+ * @property string|null $occupation
+ * @property string|null $avatar
+ * @property int $activated
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereActivated($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereAvatar($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereNickname($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereOccupation($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereProfession($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereSurname($value)
  */
 class User extends Authenticatable
 {
@@ -35,7 +48,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password','nickname','avatar','activated'
     ];
 
     /**
@@ -46,4 +59,10 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new ResetPassword($token));
+    }
 }

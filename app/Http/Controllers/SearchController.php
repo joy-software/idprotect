@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Search;
+use App\Search_Result;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SearchController extends Controller
 {
@@ -37,9 +39,8 @@ class SearchController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -47,7 +48,7 @@ class SearchController extends Controller
             'keywords' => 'required'
         ]);
 
-        $keywords =  $request->keywords;
+       $keywords =   strtolower($request->keywords);
 
         //We check if the result of this search is already in our database
         $idem = Search::whereKeywords($keywords)->get()->count();
@@ -56,17 +57,62 @@ class SearchController extends Controller
         if($idem == 0)
         {
             $search = new Search([
-                'keywords' => $keywords
+                'keywords' => strtolower($keywords)
             ]);
+            $user = Auth::user();
+            $search->user()->associate($user);
             $search->save();
         }
-        else
-        {
-           // echo 'idem';
-        }
+        $this->crawlInstance = new CrawlerController();
 
 
         return $this->crawlInstance->search($keywords);
+    }
+
+
+    public function searchII($request)
+    {
+
+        //We check if the result of this search is already in our database
+       /* $idem = Search::whereKeywords(strtolower($request))->get()->count();
+
+
+        if($idem == 0)
+        {
+            $search = new Search([
+                'keywords' => strtolower($request)
+            ]);
+            $user = Auth::user();
+            $search->user()->associate($user);
+            $search->save();
+        }//*/
+
+        return $this->crawlInstance->searchII($request);
+    }
+
+    public function searchSocial($request,$index)
+    {
+
+
+        $this->crawlInstance->searchSocial($request,$index);
+
+    }
+
+    public function searchDocument($request,$index)
+    {
+
+
+        $this->crawlInstance->searchDocument($request);
+    }
+
+    public function searchImages($request)
+    {
+        $this->crawlInstance->searchImages($request);
+    }
+
+    public function searchVideo($request)
+    {
+        $this->crawlInstance->searchVideo($request);
     }
 
     /**
@@ -89,6 +135,55 @@ class SearchController extends Controller
     public function edit(Search $search)
     {
         //
+    }
+
+
+    /**
+     * Validate a search Result Object
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function valid(Request $request)
+    {
+        $this->validate($request,[
+            'idResult' => 'required'
+        ]);
+
+        $result = Search_Result::findOrFail($request->idResult);
+
+
+        if($result)
+        {
+            $result->statut = 'valid';
+            $result->save();
+        }
+
+        return response()->json($result);
+
+    }
+
+    /**
+     * Reject a search Result Object
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function reject(Request $request)
+    {
+        $this->validate($request,[
+            'idResult' => 'required'
+        ]);
+
+        $result = Search_Result::findOrFail($request->idResult);
+
+
+        if($result)
+        {
+            $result->statut = 'rejected';
+            $result->save();
+        }
+
+        return response()->json($result);
+
     }
 
     /**

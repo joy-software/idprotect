@@ -19,6 +19,8 @@ return [
     'login' => 'Connexion',
     'logout' => 'Déconnexion',
     'register' => 'Inscription',
+    'code' => 'Renvoyer le code d\'activation',
+    'reset' => 'Reinitialisation du Mot de Passe',
     'hero_title' => 'Un oeil sur le Web',
     'hero_message' => "Sécurisez et informez vous sur votre <strong>identité numérique</strong> à tout moment.",
     'hero_search_placeholder' => 'Saisissez votre nom',

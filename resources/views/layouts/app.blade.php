@@ -8,11 +8,13 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Laravel') }} | @yield('title')</title>
 
     <!-- Styles -->
     <link href="{{-- asset('css/app.css') --}}" rel="stylesheet">
     <link href="{{ asset('css/bulma.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/my.css') }}" rel="stylesheet">
+    <link rel="shortcut icon" href={!! url('img/logo.png') !!}>
 
     <!-- Scripts -->
     <script>
@@ -28,9 +30,12 @@
         <nav class="nav">
             <div class="nav-left">
                 <a class="nav-item" href="{{ url('/') }}">
-                    <!-- Branding Image -->
+                    <figure class="image">
+                        <img src="{{url('img/logo.png')}}">
+                    </figure>
                     {{ config('app.name', 'Laravel') }}
                 </a>
+
             </div>
             <div class="nav-center">
                 <a class="nav-item">
@@ -56,29 +61,31 @@
             <!-- This "nav-menu" is hidden on mobile -->
             <!-- Add the modifier "is-active" to display it on mobile -->
             <div class="nav-right nav-menu">
-                <a class="nav-item">
+                <a class="nav-item is-tab is-active">
                     @lang('menu.home')
                 </a>
-                <a class="nav-item">
+                <a class="nav-item is-tab" >
                     @lang('menu.documentation')
                 </a>
-                <a class="nav-item">
+                <a class="nav-item is-tab" >
                     @lang('menu.blog')
                 </a>
 
                 <div class="nav-item">
                     <div class="field is-grouped">
                         @if (Auth::guest())
-                            <a href="{{ route('login') }}" class="nav-item"> @lang('menu.login')</a>
-                            <a href="{{ route('register') }}" class="nav-item"> @lang('menu.register')</a>
+                            <a href="{{ route('login') }}" class="nav-item  button is-active"> @lang('menu.login')</a>
+                            <a href="{{ route('register') }}" class="nav-item button is-info" style="margin-left: 5px"> @lang('menu.register')</a>
                         @else
                         <!-- Dropdown with two heading -->
                             <div class="has-dropdown">
                                 <input type="checkbox" id="ch1">   <!-- note: id -->
-                                <label class="button is-medium" for="ch1">
+                                <label class="button is-medium is-hidden" >
                                     {{ Auth::user()->name }} <span class="caret"></span>
                                 </label>  <!-- note: for -->
-
+                                <label class="nav-item is-tab" for="ch1">
+                                    <img src="{{url(''.Auth::user()->avatar!=null?Auth::user()->avatar:"http://bulma.io/images/placeholders/64x64.png".'')}}" class="avatar-photo"><span class="caret"></span>
+                                </label>
                                 <div class="dropdown box">
                                     <ul>
                                         <!--li><a>Action 1</a></li-->
@@ -124,7 +131,11 @@
                         </div>
                         <div class="column is-narrow">
                             <div id="carbon" class="box">
-
+                                <a  href="{{ url('img/web.png') }}">
+                                    <figure class="image is-64x64">
+                                        <img src="{{url('img/web.png')}}">
+                                    </figure>
+                                </a>
                             </div>
 
                         </div>

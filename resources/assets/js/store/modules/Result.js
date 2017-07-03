@@ -7,7 +7,8 @@ const moduleA = {
         results: [],
         activeSearch: false,
         progress: 5,
-        progressShown: false
+        progressShown: false,
+        url: '/',
     },
     mutations: {
         load (state, payload) {
@@ -37,6 +38,10 @@ const moduleA = {
         setProgress(state,value)
         {
             state.progress = value;
+        },
+        setUrl(state,value)
+        {
+            state.url = value;
         }
 
     },

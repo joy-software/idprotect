@@ -26,6 +26,7 @@ Vue.component('tab', require('./components/Tab.vue'));
 Vue.component('search', require('./components/Search.vue'));
 Vue.component('alert', require('./components/Alert.vue'));
 Vue.component('images', require('./components/Image.vue'));
+Vue.component('lang', require('./components/Lang.vue'));
 
 
 

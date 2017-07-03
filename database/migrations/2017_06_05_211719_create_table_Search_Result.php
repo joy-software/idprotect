@@ -15,13 +15,13 @@ class CreateTableSearchResult extends Migration
     {
         Schema::create('Search_Result', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('title');
-            $table->string('link');
-            $table->string('links');
-            $table->string('videoLink');
-            $table->text('preview');
+            $table->string('title')->nullable();
+            $table->string('link')->nullable();
+            $table->string('links')->nullable();
+            $table->string('videoLink')->nullable();
+            $table->text('preview')->nullable();
             $table->enum('source', ['soprano', 'alto'])->default('soprano');
-            $table->enum('category', ['all', 'social', 'documents', 'images', 'video'])->default('all');
+            $table->enum('category', ['all', 'social', 'document', 'images', 'video'])->default('all');
             $table->enum('statut', ['waiting', 'valid', 'rejected'])->default('waiting');
             $table->timestamps();
 

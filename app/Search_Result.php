@@ -24,6 +24,17 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $user_id
  * @method static \Illuminate\Database\Query\Builder|\App\Search_Result whereSource($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Search_Result whereUserId($value)
+ * @property string $links
+ * @property string $videoLink
+ * @property string $category
+ * @property string $statut
+ * @property int|null $search_id
+ * @property-read \App\Search|null $search
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Search_Result whereCategory($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Search_Result whereLinks($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Search_Result whereSearchId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Search_Result whereStatut($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Search_Result whereVideoLink($value)
  */
 class Search_Result extends Model
 {
@@ -32,9 +43,9 @@ class Search_Result extends Model
 
     protected $guarded = ['id'];
 
-    public function Category()
+    public function search()
     {
-        return $this->belongsTo('App\User','category');
+        return $this->belongsTo(Search::class);
     }
 
 }
