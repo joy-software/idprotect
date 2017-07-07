@@ -12600,7 +12600,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 this.$store.commit('load', []);
                 this.requestOn = true;
                 this.$store.commit('activeP');
-                console.log(this.form.keywords);
                 this.form.post_(this.url + '/search').then(function (result) {
                     _this.$store.commit('active');
                     _this.$store.commit('setProgress', 10);
