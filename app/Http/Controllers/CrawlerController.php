@@ -621,22 +621,27 @@ class CrawlerController extends Controller
                $crawler->filter('td div#center_col div.g')->each(function (Crawler $node, $i) {
 
                    $header = $node->filter('h3 a');
+                  
                    if ($header->count() > 0) {
                        $header = $header->html();
+                        echo $header.'<br/>';
                        //print("<br/>".$header);
                        if (strpos($header, 'mages for') == false) {
                            //echo'<br/> '.$this->count.'<br/>';
                            //print_r($this->resultHeader);
                            array_push($this->resultHeader[$this->count], $header);
+                           
                            $link = $node->filter('div cite')->html();
-
+                             echo 'link '.$link.'<br/>';
                            array_push($this->resultLink[$this->count], $link);
                            $link = $node->filter('div cite')->text();
                            array_push($this->resultLink_text[$this->count], $link);
 
                            if (strpos($link, 'books.google.com') == false) {
+                                echo 'link '.$node->filter('div span.st')->html().'<br/>';
                                array_push($this->resultBody[$this->count], $node->filter('div span.st')->html());
                            } else {
+                               echo 'link '. $node->filter('div.s')->html().'<br/>';
                                array_push($this->resultBody[$this->count], $node->filter('div.s')->html());
                            }
                        }
