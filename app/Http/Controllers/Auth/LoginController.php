@@ -101,8 +101,7 @@ class LoginController extends Controller
             'activated'  => 1,
         ], $remember == 1 ? true : false)) {
 
-            return $this->authenticated($request, $this->guard()->user())
-                ?: redirect()->intended($this->redirectPath());
+            return redirect('/en/home');
 
         }
         else {
