@@ -624,7 +624,7 @@ class CrawlerController extends Controller
                   
                    if ($header->count() > 0) {
                        $header = $header->html();
-                        echo $header.'<br/>';
+                       // echo $header.'<br/>';
                        //print("<br/>".$header);
                        if (strpos($header, 'mages for') == false) {
                            //echo'<br/> '.$this->count.'<br/>';
@@ -632,16 +632,16 @@ class CrawlerController extends Controller
                            array_push($this->resultHeader[$this->count], $header);
                            
                            $link = $node->filter('div cite')->html();
-                             echo 'link '.$link.'<br/>';
+                           //  echo 'link '.$link.'<br/>';
                            array_push($this->resultLink[$this->count], $link);
                            $link = $node->filter('div cite')->text();
                            array_push($this->resultLink_text[$this->count], $link);
 
-                           if (strpos($link, 'books.google.com') == false) {
-                                echo 'link '.$node->filter('div span.st')->html().'<br/>';
+                           if (strpos($link, 'books.google') == false) {
+                            //    echo 'link '.$node->filter('div span.st')->html().'<br/>';
                                array_push($this->resultBody[$this->count], $node->filter('div span.st')->html());
                            } else {
-                               echo 'link '. $node->filter('div.s')->html().'<br/>';
+                             //  echo 'link '. $node->filter('div.s')->html().'<br/>';
                                array_push($this->resultBody[$this->count], $node->filter('div.s')->html());
                            }
                        }
