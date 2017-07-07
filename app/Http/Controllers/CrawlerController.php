@@ -62,7 +62,7 @@ class CrawlerController extends Controller
         $client = new GuzzleClient(['handler' => $stack]);//*/
 
         //$url = 'https://check.torproject.org/';
-       //$client = new GuzzleClient();
+       $client = new GuzzleClient();
        //$client = new GuzzleClient($this->init());
        // if(empty($requete)) $requete = "ENSP Yaounde";
         $strSearch = $requete;
