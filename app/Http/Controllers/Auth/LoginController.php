@@ -101,7 +101,7 @@ class LoginController extends Controller
             'activated'  => 1,
         ], $remember == 1 ? true : false)) {
 
-            return redirect('/en/home');
+            return redirect()->route(trans('routes.home'));
 
         }
         else {
