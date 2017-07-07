@@ -61,7 +61,7 @@
             <!-- This "nav-menu" is hidden on mobile -->
             <!-- Add the modifier "is-active" to display it on mobile -->
             <div class="nav-right nav-menu">
-                <a class="nav-item is-tab is-active">
+                <a class="nav-item is-tab is-active" href="{{strtolower(route(trans('routes.home')))}}">
                     @lang('menu.home')
                 </a>
                 <a class="nav-item is-tab" >

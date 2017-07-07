@@ -81,6 +81,9 @@ Route::group(['prefix' => $language], function () {
 
 });
 
+Route::get('/',function () {
+  return  redirect()->route(trans('routes.home'));
+});
 
 Route::get('/view/{request}', 'CrawlerController@view');
 Route::get('/search/img/{search}/{link?}', 'CrawlerController@fetching_img')
