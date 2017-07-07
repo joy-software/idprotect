@@ -10,11 +10,17 @@
                 </p>
 
                 <p class="control">
-                    <button class="button is-info" :disabled="form.errors.any()" :class="{'is-loading': requestOn}">
+                    <button class="button is-info" :disabled="form.errors.any() || activate" :class="{'is-loading': requestOn}">
                         <slot></slot>
                     </button>
                 </p>
             </div>
+            <div class="progress-container is-flex" v-show="activate">
+                <progress class="progress is-info" :value="progress" max="100">
+                </progress>
+                <span class="is-small">{{progress + '%'}}</span>
+            </div>
+
             <span v-show="form.errors.has('keywords')" class="text-warning has-text-centered is-medium" v-text="form.errors.get('keywords')"></span>
 
         </div>
@@ -43,14 +49,23 @@
 
         computed:{
 
-            /*  href()
+             /*href()
              {
              return '#'+this.name.toLowerCase().replace(/ /g,'-');
              }//*/
+             progress()
+             {
+                 return this.$store.state.a.progress;
+             },
+             activate ()
+             {
+                 return this.$store.state.a.progressShown;
+             }
 
         },
 
         mounted(){
+            this.$store.commit('setUrl',this.url);
             // this.urls = this.url;
             $(window).scroll(function () {
                 if ($(window).scrollTop() > 280) {
@@ -77,14 +92,73 @@
                 }
                 else
                 {
+                    this.$store.commit('deactivate');
                     this.$store.commit('load',[]);
                     this.requestOn = true;
-                    this.form.post_(this.url).then(result => {
+                    this.$store.commit('activeP');
+                    this.form.post_(this.url+'/search').then(result => {
                         this.$store.commit('active');
-                        this.form.errors.clear();
-                        this.requestOn = false;
-                        show_error = false;
-                        this.$store.commit('load',result)
+                        this.$store.commit('setProgress',10);
+                        this.$store.commit('load',result);
+                        axios.get(this.url+'/searchII/'+this.form.keywords).then(result => {
+                            this.$store.commit('setProgress',25);
+                            this.$store.commit('add',result.data);
+                            axios.get(this.url+'/searchV/'+this.form.keywords).then(result => {
+                                this.$store.commit('setProgress',40);
+                                this.$store.commit('add',result.data);
+                                axios.get(this.url+'/searchI/'+this.form.keywords).then(result => {
+                                    this.$store.commit('setProgress',60);
+                                    this.$store.commit('add',result.data);
+                                    axios.get(this.url+'/searchS/'+this.form.keywords +'/'+1).then(result => {
+                                        this.$store.commit('setProgress',80);
+                                        this.$store.commit('add',result.data)
+                                        axios.get(this.url+'/searchD/'+this.form.keywords +'/'+1).then(result => {
+                                            this.$store.commit('setProgress',100);
+                                            this.$store.commit('add',result.data);
+                                            this.form.errors.clear();
+                                            this.requestOn = false;
+                                            show_error = false;
+                                        }).catch(errors => {
+                                            console.log(errors);
+                                            let error = [];
+                                            error.push(this.error);
+                                            erreur.keywords = error;
+                                            this.form.errors.record(erreur);
+                                            this.requestOn = false
+                                        });
+                                    }).catch(errors => {
+                                        console.log(errors);
+                                        let error = [];
+                                        error.push(this.error);
+                                        erreur.keywords = error;
+                                        this.form.errors.record(erreur);
+                                        this.requestOn = false
+                                    });
+                                }).catch(errors => {
+                                        console.log(errors);
+                                        let error = [];
+                                        error.push(this.error);
+                                        erreur.keywords = error;
+                                        this.form.errors.record(erreur);
+                                        this.requestOn = false
+                                    });
+                            })
+                            .catch(errors => {
+                                console.log(errors);
+                                let error = [];
+                                error.push(this.error);
+                                erreur.keywords = error;
+                                this.form.errors.record(erreur);
+                                this.requestOn = false
+                            });
+                        })
+                            .catch(errors => {
+                                console.log(errors);
+                                let error = [];
+                                error.push(this.error);
+                                erreur.keywords = error;
+                                this.form.errors.record(erreur);
+                                this.requestOn = false});
                     }).catch(error => {
 
                         // alert(error.indexOf('DOCTYPE'));
@@ -123,4 +197,20 @@
         width: 100%;
         z-index: 1002
     }
+
+    .progress-container {
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .progress-container .progress {
+        position: relative;
+        margin-bottom: 0 !important;
+    }
+    .progress  span {
+        margin-left: 10px;
+        min-width: 36px;
+        text-align: right;
+    }
+
 </style>
+

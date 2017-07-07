@@ -19,6 +19,8 @@ return [
     'login' => 'Login',
     'logout' => 'Logout',
     'register' => 'Register',
+    'reset' => 'Reset Password',
+    'code' => 'Resend Code Activation',
     'hero_title' => 'Keeping an eye on the Web',
     'hero_message' => 'Secure and inform yourself about your  <strong>digital identity</strong> at any time.',
     'hero_search_placeholder' => 'Enter your name',

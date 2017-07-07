@@ -17,7 +17,16 @@ class CreateSearchTable extends Migration
             $table->increments('id');
             $table->text('keywords')->nullable();
             $table->timestamps();
+
+            $table->integer('user_id')->unsigned()->nullable();
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('restrict')
+                ->onUpdate('restrict');
         });
+
+
     }
 
     /**
@@ -27,6 +36,9 @@ class CreateSearchTable extends Migration
      */
     public function down()
     {
+        Schema::table('search', function(Blueprint $table) {
+            $table->dropForeign('search_user_id_foreign');
+        });
         Schema::dropIfExists('search');
     }
 }

@@ -1,5 +1,5 @@
 <template>
-    <div v-show="isActive" class="columns">
+    <div v-show="isActive" class="columns is-inline-flex">
 
         <div class="column is-one-quarter">
             <code class="html">is-one-quarters</code>
@@ -11,7 +11,13 @@
                 <h1><slot name="before"></slot><strong v-text="number"></strong> <slot name="after"></slot></h1>
             </template>
             <template v-for="resul in results">
-                <result  :title="resul.title" :preview="resul.preview" :link="resul.links" style="margin-bottom: 15px">
+                <result  :title="resul.title" :preview="resul.preview" :link="resul.links"
+                         :type="resul.category" :statut="resul.statut" :video="resul.videoLink"
+                         :id="resul.id" style="margin-bottom: 15px" v-if="!(category === 'images')">
+                </result>
+                <result  :title="resul.title" :preview="resul.preview" :link="resul.links" :links="resul.link"
+                         :type="resul.category" :statut="resul.statut" :video="resul.videoLink"
+                         :id="resul.id" style="margin-bottom: 15px" v-else>
                 </result>
             </template>
            <alert v-if="emptyResult && search" @close="CloseNotif">
@@ -33,6 +39,7 @@ export default {
     props:{
         name: {required: true},
         selected: {default: false},
+        icon: {required: false},
     },
 
     data(){
@@ -48,9 +55,35 @@ export default {
         {
             return '#'+this.name.toLowerCase().replace(/ /g,'-');
         },
+        category()
+        {
+            if(this.name === 'All'  || this.name === 'Tout')
+            {
+                return 'all'
+            }
+            else if(this.name === 'Videos'){
+                return  'video'
+            }
+            else if(this.name === 'Documents'){
+               return  'document'
+            }
+            else if(this.name === 'Images'){
+                return 'images'
+            }
+            else {
+                return  'social'
+            }
+        },
 
         results () {
-            return this.$store.state.a.results
+            if(this.$store.getters.getResult(this.category) === undefined)
+            {
+                return []
+            }
+            else {
+
+                return this.$store.getters.getResult(this.category);
+            }
         },
 
         search(){
@@ -70,7 +103,7 @@ export default {
 
     mounted(){
         this.isActive = this.selected;
-        console.log('Component mounted.');
+        //console.log('Component mounted.');
     },
 
     created(){
@@ -80,7 +113,7 @@ export default {
     methods:{
         CloseNotif(){
             this.$store.commit('deactivate')
-        }
+        },
     }
 }
 

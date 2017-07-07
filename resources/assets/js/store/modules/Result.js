@@ -5,12 +5,20 @@
 const moduleA = {
     state: {
         results: [],
-        activeSearch: false
+        activeSearch: false,
+        progress: 5,
+        progressShown: false,
+        url: '/',
     },
     mutations: {
         load (state, payload) {
             state.results = payload
         },
+        add(state,payload)
+        {
+          state.results = state.results.concat(payload);
+        },
+
         active(state)
         {
             state.activeSearch = true;
@@ -18,6 +26,22 @@ const moduleA = {
         deactivate(state)
         {
             state.activeSearch = false;
+        },
+        activeP(state)
+        {
+            state.progressShown = true;
+        },
+        deactivateP(state)
+        {
+            state.progressShown = false;
+        },
+        setProgress(state,value)
+        {
+            state.progress = value;
+        },
+        setUrl(state,value)
+        {
+            state.url = value;
         }
 
     },
@@ -25,7 +49,11 @@ const moduleA = {
 
     },
     getters: {
+        // ...
 
+        getResult: (state, getters) => (name) => {
+            return state.results.filter(res => res.category === name)
+        }
     }
 }
 
