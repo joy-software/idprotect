@@ -56,10 +56,10 @@ class CrawlerController extends Controller
     public function view(Request $request,$requete)
     {
 
-        $stack = new HandlerStack();
+       /* $stack = new HandlerStack();
         $stack->setHandler(new CurlHandler());
         $stack->push(Middleware::tor());
-        $client = new GuzzleClient(['handler' => $stack]);
+        $client = new GuzzleClient(['handler' => $stack]);//*/
 
         //$url = 'https://check.torproject.org/';
        //$client = new GuzzleClient();
@@ -67,9 +67,9 @@ class CrawlerController extends Controller
        // if(empty($requete)) $requete = "ENSP Yaounde";
         $strSearch = $requete;
        // $url = $this->queryToUrl_min($strSearch,"CM");
-       // $url = $this->queryToUrl($strSearch, 0, 20, "CM");
+        $url = $this->queryToUrl($strSearch, 0, 20, "CM");
        // $url = "https://www.whatismyip.com";
-        $url = 'https://spinproxies.com/';
+       // $url = 'https://spinproxies.com/';
         //  $url = "https://www.iplocation.net/find-ip-address";
         //echo $strSearch;
        // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
@@ -79,17 +79,17 @@ class CrawlerController extends Controller
 
         // Go to the symfony.com website
         $crawler = $client->request('GET', $url,[
-            'proxy'=>"socks5://127.0.0.1:9050",
+           // 'proxy'=>"socks5://127.0.0.1:9050",
             'headers' => [
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 6.1)',
             ],
-            'tor_new_identity'           => true,
+          /*  'tor_new_identity'           => true,
             'tor_new_identity_sleep'     => 15,
             'tor_new_identity_timeout'   => 3,
             'tor_new_identity_exception' => true,
             'tor_control_password'       => 'password',//*/
-            //'cookies' => $jar
-        ]);
+            'cookies' => $jar
+        ]);//
         return $crawler->getBody();
     }
 
