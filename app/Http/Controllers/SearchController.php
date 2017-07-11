@@ -242,7 +242,7 @@ class SearchController extends Controller
         if($request->hasFile('avatar')){
             $avatar = $request->file('avatar');
             $filename = time() . '.' . $avatar->getClientOriginalExtension();
-            $request->file('avatar')->move('/uploads/avatars/', $filename);
+            $request->file('avatar')->move(public_path('/uploads/avatars/'), $filename);
             //Image::make($avatar)->save( public_path('/uploads/avatars/' . $filename ) );
 
             $user = Auth::user();
