@@ -42,7 +42,7 @@
                 </div>
             </div>
             <div class="hero-footer">
-                <p class="has-text-centered">Image © IDProtect - 2017 - NDJAMA Joy</p>
+                <p class="has-text-centered">Image © IDProtect - 2017 - LACY</p>
             </div>
         </section>
     </div>

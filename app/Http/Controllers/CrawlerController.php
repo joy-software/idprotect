@@ -56,10 +56,12 @@ class CrawlerController extends Controller
     public function view(Request $request,$requete)
     {
 
+
       /*  $stack = new HandlerStack();
         $stack->setHandler(new CurlHandler());
         $stack->push(Middleware::tor());
         $client = new GuzzleClient(['handler' => $stack]);*/
+
 
         //$url = 'https://check.torproject.org/';
        $client = new GuzzleClient();
@@ -67,7 +69,9 @@ class CrawlerController extends Controller
        // if(empty($requete)) $requete = "ENSP Yaounde";
         $strSearch = $requete;
        // $url = $this->queryToUrl_min($strSearch,"CM");
+
        $url = $this->queryToUrl($strSearch, 0, 20, "CM");
+
        // $url = "https://www.whatismyip.com";
        // $url = 'https://spinproxies.com/';
         //  $url = "https://www.iplocation.net/find-ip-address";
@@ -79,6 +83,7 @@ class CrawlerController extends Controller
 
         // Go to the symfony.com website
         $crawler = $client->request('GET', $url,[
+
             //'proxy'=>"socks5://127.0.0.1:9050",
             'headers' => [
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 6.1)',
@@ -90,6 +95,7 @@ class CrawlerController extends Controller
             //'tor_control_password'       => 'password',//*/
             'cookies' => $jar
         ]);
+
         return $crawler->getBody();
     }
 
@@ -622,22 +628,27 @@ class CrawlerController extends Controller
                $crawler->filter('td div#center_col div.g')->each(function (Crawler $node, $i) {
 
                    $header = $node->filter('h3 a');
+                  
                    if ($header->count() > 0) {
                        $header = $header->html();
+                       // echo $header.'<br/>';
                        //print("<br/>".$header);
                        if (strpos($header, 'mages for') == false) {
                            //echo'<br/> '.$this->count.'<br/>';
                            //print_r($this->resultHeader);
                            array_push($this->resultHeader[$this->count], $header);
+                           
                            $link = $node->filter('div cite')->html();
-
+                           //  echo 'link '.$link.'<br/>';
                            array_push($this->resultLink[$this->count], $link);
                            $link = $node->filter('div cite')->text();
                            array_push($this->resultLink_text[$this->count], $link);
 
                            if (strpos($link, 'books.google') == false) {
+
                                array_push($this->resultBody[$this->count], $node->filter('div span.st')->html());
                            } else {
+                             //  echo 'link '. $node->filter('div.s')->html().'<br/>';
                                array_push($this->resultBody[$this->count], $node->filter('div.s')->html());
                            }
                        }
