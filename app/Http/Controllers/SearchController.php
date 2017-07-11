@@ -208,7 +208,7 @@ class SearchController extends Controller
         $user->profession = $request->input('profession');
         $user->save();
 
-        $profile = $user->profile();
+        $profile = $user->profile;
 
         if(count($profile) > 0)
         {
