@@ -65,6 +65,22 @@ Route::group(['prefix' => $language], function () {
         'as'      => 'rejectSR',
         'uses'    => 'SearchController@reject']);
 
+    Route::post('/profile', [
+        'as'      => 'profile',
+        'uses'    => 'SearchController@profile']);
+
+    Route::post('/avatar', [
+        'as'      => 'avatar',
+        'uses'    => 'SearchController@avatar']);
+
+    Route::get('/load', [
+        'as'      => 'load',
+        'uses'    => 'SearchController@load']);
+
+    Route::post('/p_load', [
+        'as'      => 'p_load',
+        'uses'    => 'SearchController@p_load']);
+
     Route::get('/search/{request}', 'CrawlerController@search');
     Route::get('/searchII/{request}', 'CrawlerController@addsearchII');
     Route::get('/searchS/{request}/{index}', 'CrawlerController@searchSocial');
@@ -80,6 +96,9 @@ Route::group(['prefix' => $language], function () {
 
 
 });
+
+Route::get('/test', [
+    'uses'    => 'SearchController@load']);
 
 Route::get('/',function () {
   return  redirect()->route(trans('routes.home'));
@@ -113,6 +132,18 @@ Route::get('RegisterLang/{lang}',function($lang){
     }
     else{
         return  redirect('/en/register')->withInput();
+    }
+
+});
+
+Route::get('HomeLang/{lang}',function($lang){
+
+    if(str_contains($lang,'en'))
+    {
+        return  redirect('/fr/accueil')->withInput();
+    }
+    else{
+        return  redirect('/en/home')->withInput();
     }
 
 });

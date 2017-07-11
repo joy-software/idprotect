@@ -35,6 +35,8 @@ return [
     'register7' =>  ' and commit me to the ',
     'register8' =>  'Terms and Conditions',
     'email' => 'Send Reset Link',
+    'profile' => 'Your profile has been updated',
+    'save' => 'Save',
     'register' => [
         'success' => 'We sent you an activation code. Please check your email.',
         'already_activated' => 'This account is already activated',

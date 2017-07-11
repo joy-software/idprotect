@@ -56,6 +56,15 @@ class Form {
     }
 
     /**
+     * Send a POST request to the given URL.
+     * .
+     * @param {string} url
+     */
+     get(url) {
+        return this.submit_('get', url);
+    }
+
+    /**
      * Send a POST request to the given URL without reinitialise the inputs
      * .
      * @param {string} url

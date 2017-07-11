@@ -61,15 +61,23 @@
             <!-- This "nav-menu" is hidden on mobile -->
             <!-- Add the modifier "is-active" to display it on mobile -->
             <div class="nav-right nav-menu">
-                <a class="nav-item is-tab is-active" href="{{strtolower(route(trans('routes.home')))}}">
+                <a class="nav-item is-tab is-active" href="{{strtolower('/'.config('app.locale').'/'.trans('routes.home'))}}">
                     @lang('menu.home')
                 </a>
-                <a class="nav-item is-tab" >
+                <a class="nav-item">
+                <lang french="{{url('img/french.png')}}"
+                      english="{{url('img/britain.png')}}"
+                      url="{{url('')}}"
+                      current="{{config('app.locale')}}"
+                      route="HomeLang">
+                </lang>
+                </a>
+                <!--a class="nav-item is-tab" >
                     @lang('menu.documentation')
-                </a>
-                <a class="nav-item is-tab" >
+                </a-->
+                <!--a class="nav-item is-tab" >
                     @lang('menu.blog')
-                </a>
+                </a-->
 
                 <div class="nav-item">
                     <div class="field is-grouped">
@@ -84,7 +92,7 @@
                                     {{ Auth::user()->name }} <span class="caret"></span>
                                 </label>  <!-- note: for -->
                                 <label class="nav-item is-tab" for="ch1">
-                                    <img src="{{url(''.Auth::user()->avatar!=null?Auth::user()->avatar:"http://bulma.io/images/placeholders/64x64.png".'')}}" class="avatar-photo"><span class="caret"></span>
+                                    <img src="/uploads/avatars/{{ Auth::user()->avatar ? Auth::user()->avatar:'128x128.png'}}" class="avatar-photo"><span class="caret"></span>
                                 </label>
                                 <div class="dropdown box">
                                     <ul>
@@ -145,13 +153,47 @@
 
             <div class="hero-foot">
                 <div class="container">
-                       <search name="@lang('menu.hero_search_placeholder')"
-                               url="{{url(App::getLocale())}}"
-                               error="@lang('menu.hero_search_error')"
-                               keywords="@lang('validation.custom.keywords.required')"
-                       >@lang('menu.hero_search_button')</search>
+                    @if(Auth::user())
+                           <search v-if="!this.$store.state.a.activaterecherche"
+                                   name="@lang('menu.hero_search_placeholder')"
+                                   url="{{url(App::getLocale())}}"
+                                   error="@lang('menu.hero_search_error')"
+                                   keywords="@lang('validation.custom.keywords.required')"
+                                   @if(count(Auth::user()->search) > 0)
+                                       profile=true
+                                        inputs = "{{Auth::user()->search->first()->keywords}}"
+                                   @endif
+                           >@lang('menu.hero_search_button')</search>
+                        <search-profile v-if="this.$store.state.a.activaterecherche"
+                                       name="@lang('menu.hero_search_placeholder_2')"
+                                url="{{url(App::getLocale())}}"
+                                error="@lang('menu.hero_search_error')"
+                                keywords="@lang('validation.custom.keywords.required')"
+                                @if(count(Auth::user()->search) > 0)
+                                profile=true
+                                @endif
+                        >@lang('menu.hero_search_button')</search-profile>
+                    @endif
                 </div>
+                <div class="container">
+                    <nav class="tabs is-boxed">
+                        @if(Auth::user())
+                        <div class="nav-center">
+                            <ul>
+                                <li :class="{'is-active': this.$store.state.a.recherche}" >
+                                    <a href="" @click.prevent="rechercher">@lang('menu.hero_search')</a>
+                                </li>
+                                <li :class="{'is-active': this.$store.state.a.profil}"  >
+                                    <a href="" @click.prevent="profil">@lang('menu.hero_create_profil')</a>
+                                </li>
+                                <li :class="{'is-active': this.$store.state.a.rechercherprofil}">
+                                    <a href="" @click.prevent="rechercherprofil">@lang('menu.hero_search_profil')</a>
+                                </li>
 
+                            </ul>
+                        </div>
+                        @endif
+                    </nav></div>
             </div>
 
         </section>

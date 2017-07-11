@@ -56,20 +56,20 @@ class CrawlerController extends Controller
     public function view(Request $request,$requete)
     {
 
-        $stack = new HandlerStack();
+      /*  $stack = new HandlerStack();
         $stack->setHandler(new CurlHandler());
         $stack->push(Middleware::tor());
-        $client = new GuzzleClient(['handler' => $stack]);
+        $client = new GuzzleClient(['handler' => $stack]);*/
 
         //$url = 'https://check.torproject.org/';
-       //$client = new GuzzleClient();
+       $client = new GuzzleClient();
        //$client = new GuzzleClient($this->init());
        // if(empty($requete)) $requete = "ENSP Yaounde";
         $strSearch = $requete;
        // $url = $this->queryToUrl_min($strSearch,"CM");
-       // $url = $this->queryToUrl($strSearch, 0, 20, "CM");
+       $url = $this->queryToUrl($strSearch, 0, 20, "CM");
        // $url = "https://www.whatismyip.com";
-        $url = 'https://spinproxies.com/';
+       // $url = 'https://spinproxies.com/';
         //  $url = "https://www.iplocation.net/find-ip-address";
         //echo $strSearch;
        // $url = "http://www.google.com/search?q=".$strSearch."&hl=en&start=0&sa=N";
@@ -79,16 +79,16 @@ class CrawlerController extends Controller
 
         // Go to the symfony.com website
         $crawler = $client->request('GET', $url,[
-            'proxy'=>"socks5://127.0.0.1:9050",
+            //'proxy'=>"socks5://127.0.0.1:9050",
             'headers' => [
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 6.1)',
             ],
-            'tor_new_identity'           => true,
-            'tor_new_identity_sleep'     => 15,
-            'tor_new_identity_timeout'   => 3,
-            'tor_new_identity_exception' => true,
-            'tor_control_password'       => 'password',//*/
-            //'cookies' => $jar
+            //'tor_new_identity'           => true,
+            //'tor_new_identity_sleep'     => 15,
+            //'tor_new_identity_timeout'   => 3,
+            //'tor_new_identity_exception' => true,
+            //'tor_control_password'       => 'password',//*/
+            'cookies' => $jar
         ]);
         return $crawler->getBody();
     }
@@ -597,7 +597,8 @@ class CrawlerController extends Controller
 
                 if(!($number > 0))
                 {
-                    throwException($e);
+                    //throwException($e);
+                    $client->request('GET', $url);
                 }
 
             }
@@ -634,7 +635,7 @@ class CrawlerController extends Controller
                            $link = $node->filter('div cite')->text();
                            array_push($this->resultLink_text[$this->count], $link);
 
-                           if (strpos($link, 'books.google.com') == false) {
+                           if (strpos($link, 'books.google') == false) {
                                array_push($this->resultBody[$this->count], $node->filter('div span.st')->html());
                            } else {
                                array_push($this->resultBody[$this->count], $node->filter('div.s')->html());
@@ -664,7 +665,7 @@ class CrawlerController extends Controller
                                array_push($this->resultLinkV[$this->countV], $link);
 
 
-                               if (strpos($link, 'books.google.com') == false) {
+                               if (strpos($link, 'books.google') == false) {
                                    array_push($this->resultBodyV[$this->countV], $node->filter('div span.st')->html());
                                } else {
                                    array_push($this->resultBodyV[$this->countV], $node->filter('div.s')->html());

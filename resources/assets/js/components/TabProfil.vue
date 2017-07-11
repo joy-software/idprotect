@@ -11,14 +11,14 @@
                 <h1><slot name="before"></slot><strong v-text="number"></strong> <slot name="after"></slot></h1>
             </template>
             <template v-for="resul in results">
-                <result  :title="resul.title" :preview="resul.preview" :link="resul.links"
+                <result-profile  :title="resul.title" :preview="resul.preview" :link="resul.links"
                          :type="resul.category" :statut="resul.statut" :video="resul.videoLink"
                          :id="resul.id" style="margin-bottom: 15px" v-if="!(category === 'images')">
-                </result>
-                <result  :title="resul.title" :preview="resul.preview" :link="resul.links" :links="resul.link"
+                </result-profile>
+                <result-profile  :title="resul.title" :preview="resul.preview" :link="resul.links" :links="resul.link"
                          :type="resul.category" :statut="resul.statut" :video="resul.videoLink"
                          :id="resul.id" style="margin-bottom: 15px" v-else>
-                </result>
+                </result-profile>
             </template>
            <alert v-if="emptyResult && search" @close="CloseNotif">
                <slot name="emptyResultMessage"></slot>
@@ -28,7 +28,9 @@
          </div>
 
         <div class="column">
-            <slot name="tab_right"></slot>
+            <profile>
+
+            </profile>
         </div>
     </div>
 </template>
@@ -75,13 +77,13 @@ export default {
         },
 
         results () {
-            if(this.$store.getters.getResult(this.category) === undefined)
+            if(this.$store.getters.getResultP(this.category) === undefined)
             {
                 return []
             }
             else {
 
-                return this.$store.getters.getResult(this.category);
+                return this.$store.getters.getResultP(this.category);
             }
         },
 

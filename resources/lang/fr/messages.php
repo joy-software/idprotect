@@ -35,6 +35,8 @@ return [
     'register7' =>  ' et m\'engage à respecter les  ',
     'register8' =>  'Termes et Conditions.',
     'email' => 'Envoyer le lien',
+    'profile' => 'Votre profil a été mis à jour',
+    'save' => 'Enregistrer',
     'register' => [
         'success' => 'Nous vous avons envoyé un code d\'activation. Vérifier votre boîte email.',
         'already_activated' => 'Ce compte est déjà activé',

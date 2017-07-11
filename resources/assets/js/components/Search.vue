@@ -35,12 +35,15 @@
             url: {required: false},
             error: {required: false},
             keywords: {required: false},
+            profile: {required:false},
+            inputs: {required:false},
+            id: {required:false},
         },
 
         data(){
             return{
                 //  isActive: false,
-                form: new Form({keywords: ''}),
+                form: new Form({keywords: '',id:''}),
                requestOn: false
 
 
@@ -75,6 +78,26 @@
                     $('#nav_tab').removeClass('search-fixed');
                 }
             });
+            if(this.profile === 'true')
+            {
+                this.$store.commit('setactivateprofil',true);
+                axios.get(this.$store.state.a.url+'/load').then(result => {
+                    //console.log(result);
+                    this.$store.commit('load',result.data.results);
+                    this.$store.commit('loadP',result.data.results);
+                    this.$store.commit('loadProfile',result.data.profile);
+                    this.$store.commit('setactivaterecherche',true);
+                    this.$store.commit('seteager',true);
+                }).catch(error => {
+
+                    // alert(error.indexOf('DOCTYPE'));
+                    console.log(error);
+
+                });
+            }
+            this.form.keywords = this.inputs;
+            this.form.id = this.id
+
         },
 
         methods:{
