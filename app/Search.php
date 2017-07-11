@@ -20,6 +20,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \App\User|null $user
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Search whereUserId($value)
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Search_Result[] $searchResults
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Search_Result[] $searchResults_A
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Search_Result[] $searchResults_D
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Search_Result[] $searchResults_I
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Search_Result[] $searchResults_S
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Search_Result[] $searchResults_V
  */
 class Search extends Model
 {
@@ -47,6 +52,15 @@ class Search extends Model
     public function searchResults_A()
     {
        return  $this->hasMany('App\Search_Result')->where('category','all');
+    }
+
+    /**
+     * Get the search results for the search query for the category 'all'.
+     * @return static
+     */
+    public function searchProfile()
+    {
+        return  $this->hasMany('App\Search_Result')->where('statut','valid');
     }
 
     /**

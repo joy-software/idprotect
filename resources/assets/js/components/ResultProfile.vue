@@ -11,25 +11,6 @@
                     <p class="title is-5" v-html="title"></p>
                     <p class="subtitle is-6" ><a v-html="link" :href="link"></a></p>
                 </div>
-                <nav class="level">
-                    <div class="has-text-centered">
-                        <button class="level-item" v-show="!isLove" style="margin-bottom: 5px" @click.prevent="submitLove">
-                            <span class="icon is-small"><i class="fa fa-heart"></i></span>
-                        </button>
-                        <a class="level-item" v-show="isLove" @click.prevent="submitFLove">
-                            <span class="icon is-small"><i class="fa fa-heart"></i></span>
-                        </a>
-                        <button class="level-item" v-show="!isTrash" style="margin-bottom: 5px" @click.prevent="submitTrash">
-                            <span class="icon is-small"><i class="fa fa-trash"></i></span>
-                        </button>
-                        <a class="level-item" v-show="isTrash" @click.prevent="submitFTrash">
-                            <span class="icon is-small"><i class="fa fa-trash"></i></span>
-                        </a>
-                        <!--a class="level-item">
-                            <span class="icon is-small"><i class="fa fa-legal"></i></span>
-                        </a-->
-                    </div>
-                </nav>
             </div>
 
             <div class="content subtitle is-6" v-html="preview">
@@ -45,22 +26,6 @@
                 <div class="media-content">
                     <p class="title is-5" v-html="title"></p>
                 </div>
-                <nav class="level">
-                    <div class="has-text-centered">
-                        <button class="level-item" v-show="!isLove" style="margin-bottom: 5px" @click.prevent="submitLove">
-                            <span class="icon is-small"><i class="fa fa-heart"></i></span>
-                        </button>
-                        <a class="level-item" v-show="isLove" @click.prevent="submitFLove">
-                            <span class="icon is-small"><i class="fa fa-heart"></i></span>
-                        </a>
-                        <button class="level-item" v-show="!isTrash" style="margin-bottom: 5px" @click.prevent="submitTrash">
-                            <span class="icon is-small"><i class="fa fa-trash"></i></span>
-                        </button>
-                        <a class="level-item" v-show="isTrash" @click.prevent="submitFTrash">
-                            <span class="icon is-small"><i class="fa fa-trash"></i></span>
-                        </a>
-                    </div>
-                </nav>
             </div>
         </template>
 

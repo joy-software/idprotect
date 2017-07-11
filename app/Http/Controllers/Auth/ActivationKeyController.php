@@ -61,7 +61,7 @@ class ActivationKeyController extends Controller
         if (Auth::check()) {
             if (auth()->user()->activated) {
 
-                return redirect('/'.config('app.locale').'/')
+                return redirect('/'.config('app.locale').'/'.trans('routes.home'))
                     ->with('message', trans('messages.activated.already'))
                     ->with('status', 'success');
             }

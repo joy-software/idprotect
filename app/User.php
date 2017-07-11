@@ -65,4 +65,17 @@ class User extends Authenticatable
     {
         $this->notify(new ResetPassword($token));
     }
+
+    public function profile()
+    {
+        return $this->hasMany('App\Profile');
+    }
+
+    /**
+     * Get the search results for the search query.
+     */
+    public function search()
+    {
+        return $this->hasMany('App\Search');
+    }
 }

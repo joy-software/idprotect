@@ -24,6 +24,7 @@ return [
     'hero_title' => 'Un oeil sur le Web',
     'hero_message' => "Sécurisez et informez vous sur votre <strong>identité numérique</strong> à tout moment.",
     'hero_search_placeholder' => 'Saisissez votre nom',
+    'hero_search_placeholder_2' => 'Saisissez le nom d\'un profil',
     'hero_search_button' => 'Rechercher',
     'hero_search_error' => 'Une erreur s\'est produite lors de l\'exécution, actualisez la page avant de continuer',
     'nav_search_result_all' => 'Tout',
@@ -32,5 +33,10 @@ return [
     'nav_search_result_site' => 'Sites Web',
     'nav_search_result_image' => 'Images',
     'nav_search_result_video' => 'Videos',
+    'nav_create_profil' => 'Créer votre profil',
+    'hero_create_profil' => 'Créer un profil',
+    'hero_create_social' => 'Ajouter un réseau social',
+    'hero_search_profil' => 'Rechercher un profil',
+    'hero_search' => 'Resultats du Scan',
 
 ];

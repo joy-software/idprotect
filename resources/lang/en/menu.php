@@ -24,6 +24,7 @@ return [
     'hero_title' => 'Keeping an eye on the Web',
     'hero_message' => 'Secure and inform yourself about your  <strong>digital identity</strong> at any time.',
     'hero_search_placeholder' => 'Enter your name',
+    'hero_search_placeholder_2' => 'Type a profile name',
     'hero_search_error' => 'An error occurred while running, refresh the page before continuing',
     'hero_search_button' => 'Search',
     'nav_search_result_all' => 'All',
@@ -32,5 +33,10 @@ return [
     'nav_search_result_site' => 'WebSites',
     'nav_search_result_image' => 'Images',
     'nav_search_result_video' => 'Videos',
+    'nav_create_profil' => 'Create your profile',
+    'hero_create_profil' => 'Create  profile',
+    'hero_create_social' => 'Add a social account',
+    'hero_search_profil' => 'Search a profile',
+    'hero_search' => 'Scan Results',
 
 ];
