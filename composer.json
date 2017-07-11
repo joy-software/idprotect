@@ -16,7 +16,7 @@
         "laravel/socialite": "^3.0.6",
         "laravel/tinker": "~1.0",
         "megahertz/guzzle-tor": "^1.0",
-        "gd": "*"
+        "ext-gd": "*"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
